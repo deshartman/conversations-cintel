@@ -19,7 +19,8 @@ into a single OpenAI-backed agent with tool calling and a small operator dashboa
 
 Explicitly NOT included in this port:
 
-- Conversation Intelligence (sentiment, next best response, summary operators)
+- Conversation Intelligence in app code (no `/ci-webhook`). The demo configures it manually in the
+  Console instead; see `assets/conversation-intelligence.md`.
 - Studio handoff flow
 - Production persistence (all demo state is in-memory)
 

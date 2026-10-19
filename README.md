@@ -36,9 +36,14 @@ cp .env.example .env
 Provision Twilio resources using the helpers (run from the repo root):
 
 ```bash
+npm run preflight  # read-only: env vars, credentials, Conversations terms accepted
 npm run setup      # Memory Store + Conversation Configuration + Intelligence
 npm run profile    # Memory profile + trait groups + observations
 ```
+
+`npm run setup` steps 3-4 (Intelligence) need operator IDs. For the demo, run
+`npm run setup:memory-store` and `npm run setup:conversation-config` instead, then set up
+Intelligence manually with [assets/conversation-intelligence.md](assets/conversation-intelligence.md).
 
 Copy the resulting IDs into `.env`.
 

@@ -94,6 +94,10 @@ click it and then **Upgrade account**. This is a no-cost gate — it flips the
 account onto the Conversation Memory service plan. Skip this if you don't see
 the banner.
 
+Until this is accepted, every Memory and Orchestrator API call returns
+**401 with error `20003` "Terms of service have not been accepted"**, while
+Messaging keeps working. `npm run preflight` checks for it.
+
 ### 2.3 Provision the store
 
 Click **Get started**.
@@ -383,7 +387,10 @@ Store we linked. Zero code — one guided flow."*
 ### 4.10 (Optional) Adding Intelligence later
 
 Intelligence is a **separate** Configuration you create alongside this
-Conversation Configuration.
+Conversation Configuration. For the Owl Air demo, follow the full walkthrough
+in [assets/conversation-intelligence.md](assets/conversation-intelligence.md).
+It covers the `offer-coupon` and `Intent-Recognition` operators, the config,
+and the rule.
 
 - **In the Console:** Products & services → **Conversation Intelligence** →
   **Intelligence configurations** → **Create intelligence configuration** →

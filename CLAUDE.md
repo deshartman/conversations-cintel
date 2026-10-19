@@ -84,7 +84,7 @@ both -> tac.onMessageReady -> handleMessageReady (src/services/agent.js)
 
 ## Known doc/code mismatches (don't "fix" silently, but mention them if relevant)
 
-- AGENTS.md excludes Conversation Intelligence, yet `npm run setup` runs steps 3-4 (Intelligence
+- AGENTS.md excludes Conversation Intelligence from app code, yet `npm run setup` runs steps 3-4 (Intelligence
   config + attach), which need `TWILIO_INTELLIGENCE_*_OPERATOR_ID` vars absent from `.env.example`.
   Run steps 1-2 individually to skip Intelligence. For the demo, Intelligence is set up **manually
   in the Console** following `assets/conversation-intelligence.md`.
