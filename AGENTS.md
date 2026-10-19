@@ -28,7 +28,7 @@ Explicitly NOT included in this port:
 
 - Small, scoped changes. Do not add unrelated Twilio products or refactor across module boundaries.
 - No secrets in code. Use `.env.example` as the source of truth for configuration.
-- Node.js 22.13+, ESM, plain JavaScript (no TypeScript in application source).
+- Node.js 24+, ESM, plain JavaScript (no TypeScript in application source).
 - Fastify is owned by our code, then handed to TAC via `TACConfig.fastifyInstance`.
 
 ## Module Map

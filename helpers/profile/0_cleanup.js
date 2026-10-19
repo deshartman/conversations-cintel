@@ -137,7 +137,7 @@ async function deleteTraitGroups({ memoryStoreId, dryRun }) {
     process.exit(1);
   }
   const baseUrl = `https://memory.twilio.com/v1/ControlPlane/Stores/${memoryStoreId}/TraitGroups`;
-  const groups = (process.env.TWILIO_TRAIT_GROUPS || 'Loyalty,Travel')
+  const groups = (process.env.TWILIO_MEMORY_PROFILE_TRAIT_GROUPS || 'Loyalty,Travel')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);

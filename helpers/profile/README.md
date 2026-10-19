@@ -46,7 +46,7 @@ node helpers/profile/4_verify_memory.js <TWILIO_MEMORY_STORE_ID> <TWILIO_MEMORY_
 ```
 
 The `Contact` trait group is system-managed by Twilio. These scripts create and clean up only the
-custom Owl Airlines groups listed in `TWILIO_TRAIT_GROUPS`.
+custom Owl Airlines groups listed in `TWILIO_MEMORY_PROFILE_TRAIT_GROUPS`.
 
 Cleanup is dry-run by default:
 

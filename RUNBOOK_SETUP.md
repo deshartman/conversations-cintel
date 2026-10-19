@@ -629,7 +629,7 @@ Fill in the IDs and secrets you gathered:
 | `TWILIO_MEMORY_STORE_ID` | Section 2.5 (`mem_store_…`) |
 | `TWILIO_CONVERSATION_CONFIGURATION_ID` | Section 4.9 (`conv_configuration_…`) |
 | `TWILIO_MEMORY_PROFILE_ID` | Section 5.1 (`mem_profile_…`) — optional, reference only |
-| `TWILIO_TRAIT_GROUPS` | `Loyalty,Travel` (comma-separated; matches Section 3, minus the default Contact group) |
+| `TWILIO_MEMORY_PROFILE_TRAIT_GROUPS` | `Loyalty,Travel` (comma-separated; matches Section 3, minus the default Contact group) |
 | `TWILIO_VOICE_PUBLIC_DOMAIN` | ngrok host from Section 6.1, **no `https://` prefix** |
 | `DEMO_CALLER_PHONE_NUMBER` | Dev-phone spare number (E.164) — the number the caller dials *from* |
 | `OPENAI_API_KEY` | Your OpenAI dashboard |

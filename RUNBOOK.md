@@ -31,7 +31,7 @@ reads honestly.
 
 ## Prerequisites
 
-- Node.js 22.13+ and npm
+- Node.js 24+ and npm
 - Twilio CLI installed and logged in: `twilio login`
 - Twilio CLI dev-phone plugin: `twilio plugins:install @twilio-labs/plugin-dev-phone`
 - ngrok (or another HTTPS tunnel): `npm install -g ngrok`, then `ngrok config add-authtoken <TOKEN>`
@@ -338,9 +338,9 @@ name pattern: `OwlAir-<YYYYMMDDHHmm>`; overridable via `MEMORY_STORE_NAME`).
 
 - **Traits** tab (in the store's Settings): three trait groups —
   `Contact` (default, ships with the store), and the two we care about for
-  this demo, `Loyalty` and `Travel` (matching `TWILIO_TRAIT_GROUPS` in
+  this demo, `Loyalty` and `Travel` (matching `TWILIO_MEMORY_PROFILE_TRAIT_GROUPS` in
   `.env`). `MemoryPromptBuilder` will only surface the groups listed in
-  `TWILIO_TRAIT_GROUPS` into the prompt.
+  `TWILIO_MEMORY_PROFILE_TRAIT_GROUPS` into the prompt.
 - **Identifiers** tab: default rules `phone`, `email`, `whatsappid`, `chat`
   — no per-trait toggles.
 - **Profiles** tab: an auto-created row keyed to the dev-phone spare number

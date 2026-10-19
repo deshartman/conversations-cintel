@@ -34,8 +34,8 @@ For offline checks, import modules directly, e.g.
 - TAC also reads `TWILIO_VOICE_PUBLIC_DOMAIN` and optional `TWILIO_MEMORY_*` tuning vars.
 - `TWILIO_MEMORY_STORE_ID` / `TWILIO_MEMORY_PROFILE_ID` are read **only by the helpers**. At runtime the
   Memory Store comes from the Orchestrator Configuration.
-- `TWILIO_TRAIT_GROUPS` (in `.env.example`) is read only by `helpers/profile/0_cleanup.js`. TAC's
-  equivalent is `TWILIO_MEMORY_PROFILE_TRAIT_GROUPS`, which `.env.example` does not set.
+- `TWILIO_MEMORY_PROFILE_TRAIT_GROUPS` (`Loyalty,Travel`) is read by TAC (which trait groups to load)
+  and by `helpers/profile/0_cleanup.js` (which groups to delete).
 - TAC 2.4 sends usage telemetry by default (account SID, channel, conversation ID, timings; no
   content or phone numbers). Set `TAC_ANALYTICS_DISABLED=true` to turn it off.
 - App-only: `OPENAI_API_KEY`, `OPENAI_MODEL`, `PORT`, `DEMO_CALLER_PHONE_NUMBER`, optional
@@ -88,10 +88,8 @@ both -> tac.onMessageReady -> handleMessageReady (src/services/agent.js)
   config + attach), which need `TWILIO_INTELLIGENCE_*_OPERATOR_ID` vars absent from `.env.example`.
   Run steps 1-2 individually to skip Intelligence. For the demo, Intelligence is set up **manually
   in the Console** following `assets/conversation-intelligence.md`.
-- README says Node 24+. `.nvmrc` and `engines` say 22.13.
-- `OPENAI_MODEL` defaults to `gpt-5-mini` in `src/core/config.js` and to `gpt-4o-mini` in `.env.example`.
-- Trait groups: `.env.example` sets `TWILIO_TRAIT_GROUPS`, but TAC reads
-  `TWILIO_MEMORY_PROFILE_TRAIT_GROUPS` (see Env vars above).
+- `helpers/setup/2_create_conversation_config.js` does not set `statusCallbacks`, so SMS never
+  reaches the app until they're added (Console or API; see the `twilio-provision` skill, step 2b).
 - `SYSTEM_INSTRUCTIONS` hardcodes the Avery Stone scenario and lists tools by name. Keep it in sync
   when adding or removing tools.
 
