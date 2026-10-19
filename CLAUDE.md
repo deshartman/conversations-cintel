@@ -86,7 +86,8 @@ both -> tac.onMessageReady -> handleMessageReady (src/services/agent.js)
 
 - AGENTS.md excludes Conversation Intelligence, yet `npm run setup` runs steps 3-4 (Intelligence
   config + attach), which need `TWILIO_INTELLIGENCE_*_OPERATOR_ID` vars absent from `.env.example`.
-  Run steps 1-2 individually to skip Intelligence.
+  Run steps 1-2 individually to skip Intelligence. For the demo, Intelligence is set up **manually
+  in the Console** following `assets/conversation-intelligence.md`.
 - README says Node 24+. `.nvmrc` and `engines` say 22.13.
 - `OPENAI_MODEL` defaults to `gpt-5-mini` in `src/core/config.js` and to `gpt-4o-mini` in `.env.example`.
 - Trait groups: `.env.example` sets `TWILIO_TRAIT_GROUPS`, but TAC reads

@@ -57,6 +57,7 @@ handler as the single place where Memory context, tool calls, and dashboard stat
 
 - `assets/` contains language-agnostic demo fixtures (e.g. `trip.json`). Do not modify.
 - `assets/knowledge/` holds the Owl Air policy KB articles (luggage, pets) used as agent knowledge.
+- `assets/conversation-intelligence.md` is the manual Console walkthrough for Conversation Intelligence (operators, config, rule).
 - `helpers/setup/` provisions Memory Store, Conversation Configuration, and Orchestrator wiring.
 - `helpers/profile/` provisions the Memory profile, trait groups, and observations for Avery Stone.
 

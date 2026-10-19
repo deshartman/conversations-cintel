@@ -68,13 +68,29 @@ reaches the app. Options, in order of preference:
 
 Don't edit the helper script on stage unless the user asks. Offer to add statusCallbacks to step 2 afterwards.
 
+## Conversation Intelligence (manual, in the Console)
+
+The presenter does this **by hand on stage**. Don't script it or run the Intelligence helpers
+(`npm run setup` steps 3-4). The walkthrough and the exact operator prompts and JSON schemas live in
+**`assets/conversation-intelligence.md`**. Read it and guide the presenter one step at a time. It
+covers two custom operators (`offer-coupon`, `Intent-Recognition`) → an Intelligence configuration
+attached to the step-2 Conversation Configuration → a rule → showing the results. Prerequisite:
+steps 1-2 are done.
+
+Talking points: operators are reusable prompts with a typed JSON output. The intelligence
+configuration decides *which* conversations get analysed, by way of the attached Conversation
+Configuration. Rules decide *when* operators run and *where* their results go.
+
+The app has **no `/ci-webhook` route** (the Python version had one), so a webhook action on the rule
+would 404. Keep the results in the Console unless the user asks to add a handler.
+
 ## Out of scope (from the original bash helpers in `.claude/plans/helpers/`)
 
-These belong to the Python version and are **excluded by AGENTS.md**. Mention them only if the user asks:
-- Intelligence (`npm run setup` steps 3-4; the bash version also creates custom operators
-  `Intent-Recognition` and `Offer-Coupon` and posts to `/ci-webhook`, which this app doesn't serve).
+Mention these only if the user asks:
+- Scripted Intelligence (`npm run setup` steps 3-4, bash `3_create_intelligence_config.sh`). It's
+  done manually instead (see above). `npm run setup` fails without `TWILIO_INTELLIGENCE_*_OPERATOR_ID`
+  vars, so run steps 1-2 individually.
 - Studio handoff flow (bash `5_create_studio_handoff_flow.sh`, needs `DEMO_SPECIALIST_PHONE_NUMBER`).
-- Avoid `npm run setup` because it runs the Intelligence steps and fails without operator IDs.
 
 ## Close a conversation
 
