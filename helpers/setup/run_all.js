@@ -5,6 +5,7 @@
 //   npm run setup
 
 import { loadEnv, requireTwilioAuth } from '../common.js';
+import { runPreflight } from './0_preflight.js';
 import { createMemoryStore } from './1_create_memory_store.js';
 import { createConversationConfig } from './2_create_conversation_config.js';
 import { createIntelligenceConfig } from './3_create_intelligence_config.js';
@@ -16,6 +17,10 @@ requireTwilioAuth();
 console.log('==========================================');
 console.log('Owl Airlines Twilio Conversation Services');
 console.log('==========================================');
+console.log('');
+
+console.log('Step 0: Preflight checks');
+await runPreflight();
 console.log('');
 
 console.log('Step 1: Create Memory Store');

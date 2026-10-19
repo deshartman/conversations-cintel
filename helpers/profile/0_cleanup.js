@@ -12,6 +12,7 @@
 
 import {
   findInListing,
+  isNotFoundError,
   loadEnv,
   prettyPrint,
   requireTwilioAuth,
@@ -78,8 +79,12 @@ async function deleteProfile({ memoryStoreId, profileId, dryRun }) {
   console.log('Deleting Passenger Profile...');
   console.log(`DELETE ${url}`);
   if (!dryRun) {
-    const response = await twilioRequest('DELETE', url);
-    prettyPrint(response);
+    try {
+      prettyPrint(await twilioRequest('DELETE', url));
+    } catch (err) {
+      if (!isNotFoundError(err)) throw err;
+      console.log('Passenger Profile not found; already deleted.');
+    }
   }
   console.log('');
 }
@@ -117,8 +122,12 @@ async function deleteTraitGroup({ baseUrl, name, dryRun }) {
   const fallbackUrl = `${baseUrl}/${name}`;
   console.log(`Deleting Trait Group by display name: ${name}`);
   console.log(`DELETE ${fallbackUrl}`);
-  const response = await twilioRequest('DELETE', fallbackUrl);
-  prettyPrint(response);
+  try {
+    prettyPrint(await twilioRequest('DELETE', fallbackUrl));
+  } catch (err) {
+    if (!isNotFoundError(err)) throw err;
+    console.log(`Trait Group "${name}" not found; already deleted.`);
+  }
   console.log('');
 }
 

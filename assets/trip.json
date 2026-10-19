@@ -5,10 +5,10 @@
   },
   "trip": {
     "confirmation_code": "OWL7K9",
-    "flight_number": "OA 428",
-    "origin": "SFO",
-    "destination": "JFK",
-    "departure": "tomorrow at 8:15 AM"
+    "flight_number": "OA404",
+    "origin": "LHR",
+    "destination": "SFO",
+    "departure": "tomorrow at 7:00 PM"
   },
   "seat": {
     "current": "18B",

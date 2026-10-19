@@ -52,7 +52,7 @@ Then point your Twilio phone number's Voice and Messaging webhooks at your publi
 
 ## Demo scenario
 
-The agent plays an Owl Airlines assistant. The demo caller is Avery Stone, an Owl Club Gold passenger on an SFO to JFK trip. The agent uses Memory-driven context and local tools (trip lookup, seat search, SMS confirmations) to complete a seat-change request across Voice and SMS.
+The agent plays an Owl Airlines assistant. The demo caller is Avery Stone, an Owl Club Gold passenger on a London to San Francisco trip (OA404). The agent uses Memory-driven context and local tools (trip lookup, seat search, SMS confirmations) to complete a seat-change request across Voice and SMS.
 
 See `RUNBOOK.md` for the step-by-step demo script, and `AGENTS.md` for internal conventions and module layout.
 

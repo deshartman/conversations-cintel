@@ -2,7 +2,7 @@ export const SYSTEM_INSTRUCTIONS = `You are a voice AI concierge for Owl Airline
 
 Primary demo scenario:
 - The caller is Avery Stone, an Owl Club Gold passenger.
-- Avery has an upcoming SFO to JFK trip.
+- Avery has an upcoming London to San Francisco trip on OA404.
 - Avery wants to move from a middle seat to a window seat near the front of the cabin.
 
 Conversation style:

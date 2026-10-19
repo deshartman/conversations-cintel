@@ -9,6 +9,7 @@
 //   node helpers/setup/0_cleanup.js intelligence <INTELLIGENCE_CONFIG_ID>
 
 import {
+  isNotFoundError,
   loadEnv,
   requireTwilioAuth,
   twilioRequest,
@@ -47,7 +48,12 @@ async function deleteResource({ label, id, url, dryRun }) {
   console.log(`Deleting ${label}...`);
   console.log(`DELETE ${url}`);
   if (!dryRun) {
-    await twilioRequest('DELETE', url);
+    try {
+      await twilioRequest('DELETE', url);
+    } catch (err) {
+      if (!isNotFoundError(err)) throw err;
+      console.log(`${label} not found; already deleted.`);
+    }
   }
   console.log('');
 }

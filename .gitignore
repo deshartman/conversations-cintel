@@ -1,5 +1,10 @@
 node_modules/
-.env
-.env.local
+.env*
+!.env.example
 .DS_Store
 *.log
+
+# Share project skills and plans (overrides global **/.claude/ ignore)
+!.claude/
+.claude/settings.local.json
+.claude/worktrees/

@@ -4,7 +4,7 @@ Node.js scripts for creating a demo Owl Airlines passenger profile in Twilio Con
 
 ## Scenario
 
-Avery Stone is an Owl Club Gold passenger with an upcoming SFO to JFK trip. Avery is trying to move
+Avery Stone is an Owl Club Gold passenger with an upcoming London to San Francisco trip (OA404). Avery is trying to move
 from a middle seat to a window seat near the front of the cabin.
 
 ## Usage

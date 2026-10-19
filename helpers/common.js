@@ -53,6 +53,14 @@ export function getTwilioClient() {
   return cachedClient;
 }
 
+// Twilio error 20003 with a "Terms of service" message: the Conversations
+// products are gated behind a separate, no-cost terms acceptance per account.
+export const TERMS_HINT = `
+
+This account has not accepted the Conversations terms of service (Twilio error 20003).
+Fix: Twilio Console -> Conversation Memory -> Overview -> "Upgrade your account for full
+access" -> accept. Check Conversation Orchestrator too. See RUNBOOK_SETUP.md section 2.2.`;
+
 // Performs a JSON request against a Twilio API using the twilio SDK's
 // underlying HTTP client. Absolute URLs are supported (needed for the
 // memory/intelligence/conversations control-plane hosts).
@@ -82,7 +90,17 @@ export async function twilioRequest(method, url, payload = null) {
     );
   }
 
-  const { body } = response;
+  // client.request() resolves (does not throw) on 4xx/5xx, so check explicitly;
+  // otherwise error bodies are returned as if they were data.
+  const { statusCode, body } = response;
+  if (statusCode < 200 || statusCode >= 300) {
+    const detail = typeof body === 'string' ? body : JSON.stringify(body, null, 2);
+    throw new Error(
+      `Twilio API request failed: ${method} ${url} -> HTTP ${statusCode}\n${detail}` +
+        (/"code":\s*20003/.test(detail) && /terms of service/i.test(detail) ? TERMS_HINT : ''),
+    );
+  }
+
   if (typeof body === 'string') {
     try {
       return JSON.parse(body);
@@ -91,6 +109,12 @@ export async function twilioRequest(method, url, payload = null) {
     }
   }
   return body;
+}
+
+// True for a twilioRequest failure with HTTP 404, so cleanup can treat an
+// already-deleted resource as done and stay safe to re-run.
+export function isNotFoundError(err) {
+  return / -> HTTP 404\n/.test(err?.message ?? '');
 }
 
 export function extractResourceId(response) {

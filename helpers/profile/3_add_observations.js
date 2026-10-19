@@ -30,7 +30,7 @@ export async function addPassengerObservations({ memoryStoreId, profileId } = {}
         occurredAt: now,
       },
       {
-        content: 'Upcoming trip OW4821 from SFO to JFK is scheduled for tomorrow. Avery wants to change from seat 22B to a window seat if one is available.',
+        content: 'Upcoming trip OA404 from London to San Francisco is scheduled for tomorrow at 7:00 PM. Avery wants to change from seat 18B to a window seat if one is available.',
         source: 'owl-airlines-reservation',
         occurredAt: now,
       },

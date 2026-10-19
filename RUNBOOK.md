@@ -372,8 +372,8 @@ npm run profile
   `/v1/Stores/{storeId}/Profiles/{profileId}/Observations`:
   1. *"Avery prefers window seats near the front of the cabin and usually
      avoids middle seats."*
-  2. *"Upcoming trip OW4821 from SFO to JFK is scheduled for tomorrow.
-     Avery wants to change from seat 22B to a window seat if one is
+  2. *"Upcoming trip OA404 from London to San Francisco is scheduled for
+     tomorrow at 7:00 PM. Avery wants to change from seat 18B to a window seat if one is
      available."*
   3. *"Avery is an Owl Club Gold member and appreciates proactive rebooking
      help during delays."*
@@ -430,7 +430,7 @@ From the dev-phone (same spare number), dial the **agent number**.
 
 **SHOW**:
 
-- Voice reply now uses Avery's name and references the SFO→JFK trip
+- Voice reply now uses Avery's name and references the OA404 London→SFO trip
 - Dashboard: new VOICE conversation, but note the sidebar - the earlier SMS
   conversation may **merge** into the same thread because
   `GROUP_BY_PROFILE` links them

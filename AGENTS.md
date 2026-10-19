@@ -56,6 +56,7 @@ handler as the single place where Memory context, tool calls, and dashboard stat
 ## Fixtures and Helpers
 
 - `assets/` contains language-agnostic demo fixtures (e.g. `trip.json`). Do not modify.
+- `assets/knowledge/` holds the Owl Air policy KB articles (luggage, pets) used as agent knowledge.
 - `helpers/setup/` provisions Memory Store, Conversation Configuration, and Orchestrator wiring.
 - `helpers/profile/` provisions the Memory profile, trait groups, and observations for Avery Stone.
 

@@ -474,7 +474,7 @@ This script:
 2. POSTs three observations to
    `/v1/Stores/{storeId}/Profiles/{profileId}/Observations`:
    - Seat preference detail
-   - Upcoming trip OW4821 (SFO → JFK)
+   - Upcoming trip OA404 (London → SFO)
    - Owl Club Gold + rebooking expectations
 
 If you'd rather seed traits *and* observations in one shot, skip Option A

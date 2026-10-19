@@ -6,6 +6,7 @@
 //   npm run profile
 
 import { loadEnv, requireTwilioAuth } from '../common.js';
+import { runPreflight } from '../setup/0_preflight.js';
 import { createTraitGroups } from './1_create_trait_groups.js';
 import { createPassengerProfile } from './2_create_profile.js';
 import { addPassengerObservations } from './3_add_observations.js';
@@ -19,6 +20,10 @@ const memoryStoreId = process.argv[2] || process.env.TWILIO_MEMORY_STORE_ID;
 console.log('====================================');
 console.log('Owl Airlines Passenger Memory Setup');
 console.log('====================================');
+console.log('');
+
+console.log('Step 0: Preflight checks');
+await runPreflight();
 console.log('');
 
 console.log('Step 1: Create trait groups');
