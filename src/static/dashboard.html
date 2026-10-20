@@ -19,6 +19,12 @@
       <div id="conversationList" class="conversation-list">
         <div class="muted empty-note">No conversations yet.</div>
       </div>
+      <div class="intel-panel">
+        <div class="label">Intelligence</div>
+        <div id="intelList" class="intel-grid">
+          <div class="muted empty-note">No operator results yet.</div>
+        </div>
+      </div>
     </aside>
     <section class="content">
       <div class="section-head">
@@ -28,29 +34,8 @@
       <div class="transcript" id="transcript">
         <div class="empty">Caller and agent turns will appear here.</div>
       </div>
-      <details class="tool-events" id="toolEventsBlock" open>
-        <summary>Tool events</summary>
-        <div class="tool-events-body" id="toolEvents">
-          <div class="muted empty-note">No tool events yet.</div>
-        </div>
-      </details>
     </section>
     <section class="insights">
-      <div class="panel signals" id="signalsPanel">
-        <div class="label">Current signals</div>
-        <div class="signal-grid">
-          <div class="signal-name">Offer coupon</div>
-          <div>
-            <div class="signal-value" id="couponValue">-</div>
-            <div class="signal-trail muted" id="couponTrail"></div>
-          </div>
-          <div class="signal-name">Intent</div>
-          <div>
-            <div class="signal-value" id="intentValue">-</div>
-            <div class="signal-trail muted" id="intentTrail"></div>
-          </div>
-        </div>
-      </div>
       <div class="panel events">
         <div class="label">Events</div>
         <div class="events-body" id="eventsTimeline">

@@ -80,37 +80,6 @@ function renderTranscript(conversation) {
   container.scrollTop = container.scrollHeight;
 }
 
-function renderToolEvents(conversation) {
-  const container = document.getElementById('toolEvents');
-  container.replaceChildren();
-  const events = conversation.toolEvents || [];
-  if (!events.length) {
-    container.appendChild(el('div', 'muted empty-note', 'No tool events yet.'));
-    return;
-  }
-  for (const event of events) {
-    const wrap = el('div', 'tool-event');
-    const head = document.createElement('div');
-    head.appendChild(el('span', 'name', event.name || 'unnamed_tool'));
-    const at = fmtTime(event.at);
-    if (at) {
-      head.appendChild(document.createTextNode(' '));
-      head.appendChild(el('span', 'at', `- ${at}`));
-    }
-    wrap.appendChild(head);
-
-    if (event.args && Object.keys(event.args).length) {
-      wrap.appendChild(el('div', 'label', 'Args'));
-      wrap.appendChild(el('pre', null, safeStringify(event.args)));
-    }
-    if (event.result !== undefined && event.result !== null) {
-      wrap.appendChild(el('div', 'label', 'Result'));
-      wrap.appendChild(el('pre', null, safeStringify(event.result)));
-    }
-    container.appendChild(wrap);
-  }
-}
-
 function safeStringify(value) {
   try {
     return typeof value === 'string' ? value : JSON.stringify(value, null, 2);
@@ -132,7 +101,6 @@ function renderConversation(conversation) {
   last.textContent = `Updated ${fmtTime(new Date().toISOString())}`;
 
   renderTranscript(conversation);
-  renderToolEvents(conversation);
 }
 
 function clearConversation() {
@@ -140,9 +108,6 @@ function clearConversation() {
   document.getElementById('conversationStatus').textContent = '';
   document.getElementById('transcript').replaceChildren(
     el('div', 'empty', 'Caller and agent turns will appear here.'),
-  );
-  document.getElementById('toolEvents').replaceChildren(
-    el('div', 'muted empty-note', 'No tool events yet.'),
   );
 }
 
@@ -187,16 +152,39 @@ async function refresh() {
   }
 }
 
+// Tool details the user expanded, so a re-render does not collapse them.
+const openTools = new Set();
+
+function toolBody(event, item) {
+  const key = `${event.tool}|${event.created_at}`;
+  const details = el('details', 'tool-details');
+  details.open = openTools.has(key);
+  details.addEventListener('toggle', () => {
+    if (details.open) openTools.add(key);
+    else openTools.delete(key);
+  });
+  const hasArgs = event.arguments && Object.keys(event.arguments).length;
+  const summary = event.status === 'failed' && event.result?.error
+    ? `error: ${event.result.error}`
+    : hasArgs ? JSON.stringify(event.arguments) : 'no args';
+  details.appendChild(el('summary', null, summary));
+  if (hasArgs) {
+    details.appendChild(el('div', 'label', 'Args'));
+    details.appendChild(el('pre', null, safeStringify(event.arguments)));
+  }
+  if (event.result !== undefined && event.result !== null) {
+    details.appendChild(el('div', 'label', 'Result'));
+    details.appendChild(el('pre', null, safeStringify(event.result)));
+  }
+  item.appendChild(details);
+}
+
 function eventItem(event) {
   const item = el('div', `event-item ${event.kind}`);
   const head = el('div', 'event-head');
   let title = '';
   let detail = '';
-  if (event.kind === 'message') {
-    const caller = event.role === 'user';
-    head.appendChild(el('span', `badge ${caller ? 'caller' : 'agent'}`, caller ? 'Caller' : 'Agent'));
-    detail = event.content;
-  } else if (event.kind === 'orchestrator') {
+  if (event.kind === 'orchestrator') {
     head.appendChild(el('span', 'badge orchestrator', 'Orchestrator'));
     title = event.event_type;
     detail = event.detail;
@@ -206,14 +194,16 @@ function eventItem(event) {
     detail = event.detail;
     if (event.signal?.type === 'offer_coupon' && event.signal.value === true) item.classList.add('coupon-yes');
   } else if (event.kind === 'tool') {
-    head.appendChild(el('span', `badge tool ${event.status === 'failed' ? 'failed' : ''}`, 'Tool'));
+    const failed = event.status === 'failed';
+    if (failed) item.classList.add('failed');
+    head.appendChild(el('span', `badge tool ${failed ? 'failed' : ''}`, 'Tool'));
     title = event.tool;
-    detail = event.arguments && Object.keys(event.arguments).length ? JSON.stringify(event.arguments) : '';
   }
   if (title) head.appendChild(el('span', 'event-name', title));
   head.appendChild(el('span', 'event-time muted', fmtTime(event.created_at)));
   item.appendChild(head);
   if (detail) item.appendChild(el('div', 'event-detail', detail));
+  if (event.kind === 'tool') toolBody(event, item);
   return item;
 }
 
@@ -228,42 +218,72 @@ function renderEvents(events) {
   container.scrollTop = container.scrollHeight;
 }
 
-const couponText = (value) => (value ? 'YES' : 'no');
+// offer-coupon and Intent-Recognition first, then other operators A-Z.
+const PINNED = { offer_coupon: 0, intent: 1 };
+const signalText = (signal) => (signal.type === 'offer_coupon' ? (signal.value ? 'YES' : 'no') : String(signal.value));
 
-function renderSignal(valueId, trailId, signal, format) {
-  const valueEl = document.getElementById(valueId);
-  const latest = signal?.latest;
-  valueEl.textContent = latest ? format(latest.value) : '-';
-  valueEl.classList.toggle('yes', valueId === 'couponValue' && latest?.value === true);
-  // Earlier values only (the latest is shown above), most recent 3.
-  const earlier = (signal?.history ?? []).slice(0, -1).slice(-3);
-  document.getElementById(trailId).textContent =
-    earlier.length ? `was: ${earlier.map((h) => format(h.value)).join(' \u2192 ')}` : '';
+// Latest result per operator, from the time-ordered intelligence events.
+// Signal operators show their value (the label already names it) and a
+// "was:" trail of up to 3 earlier distinct values.
+function latestPerOperator(events) {
+  const byOp = new Map();
+  for (const event of events) {
+    if (event.kind !== 'intelligence') continue;
+    const name = event.operator || 'Operator';
+    const value = event.signal ? signalText(event.signal) : event.detail || '';
+    const row = byOp.get(name) ?? { name, history: [] };
+    if (row.value !== value) row.history.push(value);
+    row.value = value;
+    row.signal = event.signal;
+    byOp.set(name, row);
+  }
+  const rank = (row) => PINNED[row.signal?.type] ?? 2;
+  return [...byOp.values()].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
 }
 
-function renderSignals(signals) {
-  renderSignal('intentValue', 'intentTrail', signals.intent, String);
-  renderSignal('couponValue', 'couponTrail', signals.offer_coupon, couponText);
+// Last rendered value per operator, to flash rows whose value changed.
+let intelFor = null;
+let intelValues = new Map();
+
+function renderIntel(id, events) {
+  const container = document.getElementById('intelList');
+  const rows = latestPerOperator(events);
+  const prev = intelFor === id ? intelValues : new Map();
+  container.replaceChildren();
+  if (!rows.length) container.appendChild(el('div', 'muted empty-note', 'No operator results yet.'));
+  for (const row of rows) {
+    container.appendChild(el('div', 'intel-name', row.name));
+    const cell = el('div', 'intel-cell');
+    const value = el('div', 'intel-value', row.value || '-');
+    if (row.signal?.type === 'offer_coupon' && row.signal.value === true) value.classList.add('yes');
+    cell.appendChild(value);
+    const earlier = row.signal ? row.history.slice(0, -1).slice(-3) : [];
+    if (earlier.length) cell.appendChild(el('div', 'intel-trail muted', `was: ${earlier.join(' → ')}`));
+    if (prev.has(row.name) && prev.get(row.name) !== row.value) {
+      cell.classList.add('flash');
+      setTimeout(() => cell.classList.remove('flash'), 1500);
+    }
+    container.appendChild(cell);
+  }
+  intelFor = id;
+  intelValues = new Map(rows.map((r) => [r.name, r.value]));
 }
 
-// Events + signals for the selected conversation. Re-renders only when the
-// combined payload changed, so the timeline does not jump between polls.
+// Events for the selected conversation. Re-renders only when the payload
+// changed, so the timeline does not jump between polls. Messages are left
+// out: they are already in the transcript.
 async function pollInsights() {
   const id = selectedId;
   if (!id) return;
   try {
-    const base = `/api/sessions/${encodeURIComponent(id)}`;
-    const [events, signals] = await Promise.all([
-      fetch(`${base}/events`).then((r) => r.json()),
-      fetch(`${base}/signals`).then((r) => r.json()),
-    ]);
+    const data = await fetch(`/api/sessions/${encodeURIComponent(id)}/events`).then((r) => r.json());
     if (id !== selectedId) return;
-    const key = JSON.stringify([id, events.events, signals]);
+    const events = (data.events || []).filter((e) => e.kind !== 'message');
+    const key = JSON.stringify([id, events]);
     if (key === lastInsights) return;
     lastInsights = key;
-    // Signals first: their height changes the timeline's, then scroll it.
-    renderSignals(signals);
-    renderEvents(events.events || []);
+    renderIntel(id, events);
+    renderEvents(events);
   } catch {
     // Retain last-known state on transient errors.
   }
