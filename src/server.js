@@ -13,9 +13,11 @@ import {
 import { registerDashboardRoutes } from './routes/dashboard.js';
 import { handleMessageReady } from './services/agent.js';
 import { markConversationEnded } from './repositories/conversations.js';
+import { captureCiPayload, captureOrchestratorPayload } from './services/capture.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const CI_WEBHOOK_PATH = '/ci-webhook';
 
 config();
 
@@ -41,6 +43,16 @@ export async function startServer() {
 
   await registerDashboardRoutes(fastify);
 
+  // Copy CI and Orchestrator webhook bodies into dashboard state before TAC's
+  // route runs. preValidation fires after body parsing but before TAC's
+  // signature preHandler, so capture happens whether or not TAC accepts it.
+  fastify.addHook('preValidation', async (request) => {
+    if (request.method !== 'POST') return;
+    const urlPath = request.url.split('?')[0];
+    if (urlPath === CI_WEBHOOK_PATH) captureCiPayload(request.body);
+    else if (urlPath === '/webhook') captureOrchestratorPayload(request.body);
+  });
+
   const tac = await buildTac();
   // Voice uses ACTIVE TwiML via ConversationRelay; do NOT add passive VOICE
   // capture rules in the Orchestrator config or STT will be double-billed.
@@ -57,6 +69,11 @@ export async function startServer() {
     messagingChannels: [smsChannel],
     fastifyInstance: fastify,
     port: Number(process.env.PORT ?? 8000),
+    // TAC registers /ci-webhook only when asked; without the CI config ID it
+    // would answer every request with 400, so leave the route off entirely.
+    ...(process.env.TWILIO_TAC_CI_CONFIGURATION_ID && {
+      webhookPaths: { cintel: CI_WEBHOOK_PATH },
+    }),
   });
 
   await server.start();

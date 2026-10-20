@@ -2,7 +2,13 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
-import { listConversations, getConversation } from '../repositories/conversations.js';
+import {
+  listConversations,
+  getConversation,
+  getCiEvents,
+  getOrchestratorEvents,
+} from '../repositories/conversations.js';
+import { ciSignals } from '../services/capture.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DASHBOARD_HTML_PATH = join(__dirname, '..', 'static', 'dashboard.html');
@@ -24,6 +30,48 @@ export async function registerDashboardRoutes(fastify) {
       return { error: 'not_found', id: request.params.id };
     }
     return conversation;
+  });
+
+  // Time-ordered timeline for one conversation: transcript turns, tool calls,
+  // Orchestrator webhook events and CI operator results. Not 404 for unknown
+  // IDs: CI/Orchestrator webhooks can arrive before the agent sees a turn.
+  fastify.get('/api/sessions/:id/events', async (request) => {
+    const { id } = request.params;
+    const conversation = getConversation(id);
+    const ciEvents = getCiEvents(id);
+    const orchestratorEvents = getOrchestratorEvents(id);
+    const toolEvents = (conversation?.toolEvents ?? []).map((e) => ({
+      tool: e.name,
+      arguments: e.args ?? {},
+      result: e.result ?? null,
+      status: e.result?.error ? 'failed' : 'completed',
+      created_at: e.at,
+    }));
+
+    const events = [
+      ...(conversation?.transcript ?? []).map((t) => ({
+        kind: 'message',
+        role: t.role === 'agent' ? 'assistant' : 'user',
+        content: t.text,
+        created_at: t.at,
+      })),
+      ...toolEvents.map((e) => ({ kind: 'tool', ...e })),
+      ...orchestratorEvents.map((e) => ({ kind: 'orchestrator', ...e })),
+      ...ciEvents.map((e) => ({ kind: 'intelligence', ...e })),
+    ].sort((a, b) => (a.created_at ?? '').localeCompare(b.created_at ?? ''));
+
+    return {
+      id,
+      events,
+      ci_events: ciEvents,
+      tool_events: toolEvents,
+      orchestrator_events: orchestratorEvents,
+    };
+  });
+
+  fastify.get('/api/sessions/:id/signals', async (request) => {
+    const { id } = request.params;
+    return { id, ...ciSignals(getCiEvents(id)) };
   });
 
   fastify.get('/healthz', async () => ({ status: 'ok' }));

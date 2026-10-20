@@ -2,9 +2,41 @@
 // No persistence: state is lost on process restart, which is fine for the demo.
 
 const conversations = new Map();
+// Webhook-captured events keyed by conversation ID. Kept apart from
+// `conversations` because CI / Orchestrator webhooks can arrive for
+// conversations the agent has not handled yet.
+const MAX_EVENTS = 200;
+const ciEvents = new Map();
+const orchestratorEvents = new Map();
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+function pushCapped(store, convId, event) {
+  let list = store.get(convId);
+  if (!list) {
+    list = [];
+    store.set(convId, list);
+  }
+  list.push(event);
+  if (list.length > MAX_EVENTS) list.splice(0, list.length - MAX_EVENTS);
+}
+
+export function addCiEvent(convId, event) {
+  pushCapped(ciEvents, convId, event);
+}
+
+export function addOrchestratorEvent(convId, event) {
+  pushCapped(orchestratorEvents, convId, event);
+}
+
+export function getCiEvents(convId) {
+  return ciEvents.get(convId) ?? [];
+}
+
+export function getOrchestratorEvents(convId) {
+  return orchestratorEvents.get(convId) ?? [];
 }
 
 function newRecord(convId, context) {
