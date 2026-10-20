@@ -87,7 +87,7 @@ On the new Intelligence configuration, click **Create rule**:
   conversation end** only produces one set of results, after the conversation closes.
 - **Action:** webhook, `POST https://$TWILIO_VOICE_PUBLIC_DOMAIN/ci-webhook`.
 
-In the app's `.env`, set `TWILIO_TAC_CI_CONFIGURATION_ID` to **this** Intelligence configuration's ID
+In the app's `.env`, set `TWILIO_INTELLIGENCE_CONFIGURATION_ID` to **this** Intelligence configuration's ID
 (`intelligence_configuration_...`), then restart the app. Without it, `/ci-webhook` returns 404. TAC
 only processes results from that one configuration, though the dashboard still shows every result
 it receives.

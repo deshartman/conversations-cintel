@@ -16,7 +16,7 @@ into a single OpenAI-backed agent with tool calling and a small operator dashboa
 - Conversation Memory profile lookup and Recall injected into the system prompt
 - OpenAI tool calling against local Owl Airlines demo tools
 - Lightweight dashboard for observing state, including Conversation Intelligence operator results
-  posted to `/ci-webhook` (only registered when `TWILIO_TAC_CI_CONFIGURATION_ID` is set). The
+  posted to `/ci-webhook` (only registered when `TWILIO_INTELLIGENCE_CONFIGURATION_ID` is a real ID). The
   operators and rule are still configured manually in the Console; see
   `assets/conversation-intelligence.md`.
 

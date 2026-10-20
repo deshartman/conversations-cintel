@@ -41,8 +41,10 @@ For offline checks, import modules directly, e.g.
   content or phone numbers). Set `TAC_ANALYTICS_DISABLED=true` to turn it off.
 - App-only: `OPENAI_API_KEY`, `OPENAI_MODEL`, `PORT`, `DEMO_CALLER_PHONE_NUMBER`, optional
   `TWILIO_MESSAGING_SERVICE_SID`.
-- `TWILIO_TAC_CI_CONFIGURATION_ID` (optional): when set, `src/server.js` passes
-  `webhookPaths: { cintel: '/ci-webhook' }` to TAC; unset means `/ci-webhook` returns 404. TAC only
+- `TWILIO_INTELLIGENCE_CONFIGURATION_ID` is read by the helpers and, when it is a real ID (not
+  `xxxx`), copied by `src/server.js` into `TWILIO_TAC_CI_CONFIGURATION_ID` (the name TAC's
+  `fromEnv()` reads) before TAC starts. Then `src/server.js` passes
+  `webhookPaths: { cintel: '/ci-webhook' }` to TAC; otherwise `/ci-webhook` returns 404. TAC only
   processes results from this one Intelligence configuration, but the dashboard capture hook
   (`src/services/capture.js`, a `preValidation` hook that runs before TAC's signature check) stores
   every operator result regardless. `TWILIO_TAC_CI_SUMMARY_OPERATOR_SID` is optional.

@@ -84,6 +84,9 @@ response are secondary and are rendered generically.
   `toolEvents` (`name`, `args`, `result`, `at`) stay as they are so the current UI keeps working;
   `/events` maps them to upstream names (`role: user|assistant`, `content`, `tool`, `arguments`,
   `created_at`).
+- **One env var** (later change): `TWILIO_INTELLIGENCE_CONFIGURATION_ID` is mirrored into
+  `TWILIO_TAC_CI_CONFIGURATION_ID` in `src/server.js` before `TACConfig.fromEnv()`, so `.env` holds
+  the ID once. No TAC code change. `xxxx` placeholders are ignored.
 - **`/ci-webhook` gating**: route is not registered at all without `TWILIO_TAC_CI_CONFIGURATION_ID`
   (404), rather than TAC's 400.
 - **Phase 2 UI is additive.** A third column (`.insights`, 400px) on the existing dashboard holds

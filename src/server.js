@@ -21,6 +21,13 @@ const CI_WEBHOOK_PATH = '/ci-webhook';
 
 config();
 
+// One Intelligence config ID for the helpers and TAC: TAC's fromEnv() reads
+// TWILIO_TAC_CI_CONFIGURATION_ID, so mirror ours into it (placeholders ignored).
+const intelConfigId = process.env.TWILIO_INTELLIGENCE_CONFIGURATION_ID;
+if (intelConfigId && !intelConfigId.includes('xxxx')) {
+  process.env.TWILIO_TAC_CI_CONFIGURATION_ID = intelConfigId;
+}
+
 async function buildTac() {
   try {
     return await TAC.create({ config: TACConfig.fromEnv() });
