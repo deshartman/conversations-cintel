@@ -235,9 +235,10 @@ function renderSignal(valueId, trailId, signal, format) {
   const latest = signal?.latest;
   valueEl.textContent = latest ? format(latest.value) : '-';
   valueEl.classList.toggle('yes', valueId === 'couponValue' && latest?.value === true);
-  const history = signal?.history ?? [];
+  // Earlier values only (the latest is shown above), most recent 3.
+  const earlier = (signal?.history ?? []).slice(0, -1).slice(-3);
   document.getElementById(trailId).textContent =
-    history.length > 1 ? history.map((h) => format(h.value)).join(' \u2192 ') : '';
+    earlier.length ? `was: ${earlier.map((h) => format(h.value)).join(' \u2192 ')}` : '';
 }
 
 function renderSignals(signals) {

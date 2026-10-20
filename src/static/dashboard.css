@@ -135,11 +135,14 @@ main {
 .panel.events { display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
 .events-body { flex: 1; min-height: 0; overflow: auto; }
 
-.signal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
-.signal-name { font-size: 11px; color: var(--muted); }
-.signal-value { font-size: 20px; font-weight: 800; line-height: 1.2; margin-top: 2px; overflow-wrap: anywhere; }
-.signal-value.yes { color: var(--yes); }
-.signal-trail { font-size: 11px; margin-top: 4px; line-height: 1.35; }
+.signal-grid {
+  display: grid; grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 12px; row-gap: 8px; margin-top: 8px; font-size: 12px;
+}
+.signal-name { color: var(--muted); line-height: 1.35; }
+.signal-value { font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.signal-value.yes { color: var(--yes); font-weight: 800; }
+.signal-trail { font-size: 11px; margin-top: 2px; line-height: 1.35; }
 
 .event-item { border-top: 1px solid var(--line); padding: 7px 0; font-size: 12px; }
 .event-item:first-child { border-top: 0; }
