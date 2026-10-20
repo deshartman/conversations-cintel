@@ -35,10 +35,15 @@ h1 { margin: 0; font-size: 18px; font-weight: 700; }
 h2 { margin: 0; font-size: 15px; font-weight: 700; }
 
 main {
+  --left: 380px; --right: 380px;
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr) 400px;
+  grid-template-columns: var(--left) 6px minmax(0, 1fr) 6px var(--right);
   height: calc(100vh - 56px);
 }
+
+.resizer { cursor: col-resize; background: transparent; transition: background-color .15s; }
+.resizer:hover, .resizer.dragging { background: var(--line); }
+body.resizing { cursor: col-resize; user-select: none; }
 
 .sidebar {
   display: flex; flex-direction: column; gap: 10px;
@@ -46,11 +51,26 @@ main {
   padding: 12px; overflow: hidden;
 }
 .sidebar-head { display: flex; align-items: center; justify-content: space-between; }
-.conversation-list { flex: 1; min-height: 0; overflow: auto; }
-.intel-panel {
-  flex: 0 1 auto; max-height: 60%; overflow: auto;
-  border-top: 1px solid var(--line); padding-top: 10px;
+/* Conversations stay compact on top; Events take the rest of the column. */
+.conversation-list { flex: 0 0 auto; max-height: 30%; overflow: auto; }
+.sidebar .panel.events { flex: 1; padding: 10px 0 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; }
+.intel-panel { overflow: auto; }
+
+.memory-panel { overflow: auto; }
+.memory-body { margin-top: 8px; font-size: 12px; }
+.memory-section { margin-top: 10px; }
+.memory-section:first-child { margin-top: 0; }
+.memory-group { font-weight: 700; margin-top: 6px; }
+.memory-grid {
+  display: grid; grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 10px; row-gap: 2px; line-height: 1.35;
 }
+.memory-grid .k { color: var(--muted); }
+.memory-grid .v { overflow-wrap: anywhere; }
+.memory-id { font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+.memory-list { margin: 4px 0 0; padding-left: 16px; line-height: 1.35; }
+.memory-list li { margin-bottom: 3px; }
+.badge.memory { border-color: #bcd3f5; color: #1f5fbf; background: #eaf2fe; margin-left: 6px; }
 .intel-grid {
   display: grid; grid-template-columns: max-content minmax(0, 1fr);
   column-gap: 10px; row-gap: 6px; margin-top: 8px; font-size: 12px;
@@ -118,10 +138,12 @@ main {
   border-color: var(--agent); border-left-width: 1px; border-right: 4px solid var(--agent);
 }
 
+/* Memory pinned on top (up to ~55%), Intelligence below it. */
 .insights {
-  display: grid; grid-template-rows: minmax(0, 1fr);
-  min-height: 0; padding: 14px 14px 14px 0; overflow: hidden;
+  display: grid; grid-template-rows: minmax(0, auto) minmax(0, 1fr);
+  gap: 12px; min-height: 0; padding: 14px 14px 14px 0; overflow: hidden;
 }
+.insights .memory-panel { max-height: 55vh; }
 .panel {
   border: 1px solid var(--line); background: var(--surface);
   border-radius: 8px; padding: 10px 12px; min-height: 0;
@@ -182,10 +204,14 @@ main {
   .event-item.tool.failed .tool-details summary { color: #f29a9a; }
   .badge { background: #131c2f; }
   .badge.active { background: #103023; color: #7ad7ac; border-color: #1f5b3f; }
+  .badge.memory { background: #12223d; color: #9cc3f7; border-color: #27406a; }
 }
 
 @media (max-width: 900px) {
   main { grid-template-columns: 1fr; height: auto; }
+  .resizer { display: none; }
+  .conversation-list { max-height: none; }
+  .insights .memory-panel { max-height: none; }
   .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
   .content { overflow: visible; padding: 12px; }
   .transcript { max-height: 60vh; }

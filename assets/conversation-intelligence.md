@@ -95,9 +95,9 @@ it receives.
 ## 4. Show the results
 
 Open the dashboard (`/`), select the conversation, then call or text as Avery. After each turn the
-**Intelligence** panel under Conversations (left column) updates in place, with one row per operator
+**Intelligence** panel (right column, under Memory) updates in place, with one row per operator
 showing its latest result (offer-coupon and Intent-Recognition first, then Sentiment and any other
-operator). The right-column **Events** timeline gets a new Intelligence row for each result, next
+operator). The **Events** timeline (left column, under Conversations) gets a new Intelligence row for each result, next
 to Orchestrator and Tool rows. Caller/agent messages are only in the transcript. For example, intent
 goes Change seats → Add check-in baggage → Loyalty recovery (earlier values show as a "was:" trail),
 and offer coupon flips from "no" to a green **YES** after a frustrated delay message. The same

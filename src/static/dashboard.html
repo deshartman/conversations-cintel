@@ -19,13 +19,14 @@
       <div id="conversationList" class="conversation-list">
         <div class="muted empty-note">No conversations yet.</div>
       </div>
-      <div class="intel-panel">
-        <div class="label">Intelligence</div>
-        <div id="intelList" class="intel-grid">
-          <div class="muted empty-note">No operator results yet.</div>
+      <div class="panel events">
+        <div class="label">Events</div>
+        <div class="events-body" id="eventsTimeline">
+          <div class="muted empty-note">No events yet.</div>
         </div>
       </div>
     </aside>
+    <div class="resizer" data-side="left" title="Drag to resize"></div>
     <section class="content">
       <div class="section-head">
         <h2 id="conversationTitle">Select a conversation</h2>
@@ -35,11 +36,18 @@
         <div class="empty">Caller and agent turns will appear here.</div>
       </div>
     </section>
+    <div class="resizer" data-side="right" title="Drag to resize"></div>
     <section class="insights">
-      <div class="panel events">
-        <div class="label">Events</div>
-        <div class="events-body" id="eventsTimeline">
-          <div class="muted empty-note">No events yet.</div>
+      <div class="panel memory-panel">
+        <div class="label">Memory</div>
+        <div id="memoryBody" class="memory-body">
+          <div class="muted empty-note">No profile loaded yet.</div>
+        </div>
+      </div>
+      <div class="panel intel-panel">
+        <div class="label">Intelligence</div>
+        <div id="intelList" class="intel-grid">
+          <div class="muted empty-note">No operator results yet.</div>
         </div>
       </div>
     </section>

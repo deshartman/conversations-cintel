@@ -101,6 +101,110 @@ function renderConversation(conversation) {
   last.textContent = `Updated ${fmtTime(new Date().toISOString())}`;
 
   renderTranscript(conversation);
+  renderMemory(conversation.memorySnapshot);
+}
+
+const formatTrait = (value) => (value !== null && typeof value === 'object' ? JSON.stringify(value) : String(value ?? ''));
+
+function memorySection(title, body) {
+  const section = el('div', 'memory-section');
+  const label = el('div', 'label', title);
+  label.appendChild(el('span', 'badge memory', 'Memory'));
+  section.append(label, body);
+  return section;
+}
+
+function memoryListSection(title, items) {
+  if (!items?.length) return null;
+  const list = el('ul', 'memory-list');
+  for (const item of items) list.appendChild(el('li', null, item));
+  return memorySection(title, list);
+}
+
+// Profile (traits grouped like Contact / Loyalty / Travel), observations and
+// summaries that TAC loaded for this conversation.
+let lastMemory = null;
+
+function renderMemory(snapshot) {
+  const key = JSON.stringify(snapshot ?? null);
+  if (key === lastMemory) return;
+  lastMemory = key;
+  const body = document.getElementById('memoryBody');
+  body.replaceChildren();
+  if (!snapshot) {
+    body.appendChild(el('div', 'muted empty-note', 'No profile loaded yet.'));
+    return;
+  }
+  const profile = el('div');
+  const idGrid = el('div', 'memory-grid');
+  idGrid.append(el('div', 'k', 'Profile ID'), el('div', 'v memory-id', snapshot.profileId || '-'));
+  profile.appendChild(idGrid);
+  for (const [group, values] of Object.entries(snapshot.traits || {})) {
+    if (values === null || values === undefined) continue;
+    profile.appendChild(el('div', 'memory-group', group));
+    const grid = el('div', 'memory-grid');
+    if (typeof values === 'object' && !Array.isArray(values)) {
+      for (const [k, v] of Object.entries(values)) grid.append(el('div', 'k', k), el('div', 'v', formatTrait(v)));
+    } else {
+      grid.append(el('div', 'k', group), el('div', 'v', formatTrait(values)));
+    }
+    profile.appendChild(grid);
+  }
+  body.appendChild(memorySection('Profile', profile));
+  for (const section of [
+    memoryListSection('Observations', snapshot.observations),
+    memoryListSection('Summaries', snapshot.summaries),
+  ]) {
+    if (section) body.appendChild(section);
+  }
+}
+
+// Drag the gutters to resize the left (Conversations + Events) and right
+// (Memory + Intelligence) columns. Widths are remembered per browser.
+const shell = document.getElementById('dashboardShell');
+const WIDTH_LIMITS = { min: 240, max: 720 };
+
+function setColumnWidth(side, px) {
+  const width = Math.max(WIDTH_LIMITS.min, Math.min(WIDTH_LIMITS.max, Math.round(px)));
+  shell.style.setProperty(`--${side}`, `${width}px`);
+  return width;
+}
+
+for (const side of ['left', 'right']) {
+  try {
+    const saved = Number(localStorage.getItem(`dashboard.${side}`));
+    if (saved) setColumnWidth(side, saved);
+  } catch {
+    // Storage unavailable; keep the CSS default.
+  }
+}
+
+for (const handle of document.querySelectorAll('.resizer')) {
+  handle.addEventListener('pointerdown', (down) => {
+    const side = handle.dataset.side;
+    const startX = down.clientX;
+    const startWidth = parseFloat(getComputedStyle(shell).getPropertyValue(`--${side}`));
+    let width = startWidth;
+    handle.setPointerCapture(down.pointerId);
+    handle.classList.add('dragging');
+    document.body.classList.add('resizing');
+    const move = (e) => {
+      const delta = e.clientX - startX;
+      width = setColumnWidth(side, side === 'left' ? startWidth + delta : startWidth - delta);
+    };
+    const up = () => {
+      handle.removeEventListener('pointermove', move);
+      handle.classList.remove('dragging');
+      document.body.classList.remove('resizing');
+      try {
+        localStorage.setItem(`dashboard.${side}`, String(width));
+      } catch {
+        // Ignore: width just won't persist.
+      }
+    };
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', up, { once: true });
+  });
 }
 
 function clearConversation() {
@@ -109,6 +213,7 @@ function clearConversation() {
   document.getElementById('transcript').replaceChildren(
     el('div', 'empty', 'Caller and agent turns will appear here.'),
   );
+  renderMemory(null);
 }
 
 async function loadSelected() {

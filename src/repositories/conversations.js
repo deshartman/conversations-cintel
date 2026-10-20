@@ -64,6 +64,17 @@ export function ensureDashboardConversation(convId, context, memoryResponse) {
   if (memoryResponse !== undefined) {
     record.memory = memoryResponse;
   }
+  // Plain snapshot for the dashboard Memory panel (TACMemoryResponse is a class
+  // and does not serialise usefully).
+  const profile = context?.session?.profile ?? context?.profile;
+  if (profile || memoryResponse) {
+    record.memorySnapshot = {
+      profileId: profile?.id ?? record.profileId ?? null,
+      traits: profile?.traits ?? {},
+      observations: (memoryResponse?.observations ?? []).map((o) => o.content),
+      summaries: (memoryResponse?.summaries ?? []).map((s) => s.content),
+    };
+  }
   return record;
 }
 
