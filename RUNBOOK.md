@@ -91,8 +91,11 @@ values into `.env` as `TWILIO_MEMORY_STORE_ID` and
 npm run setup
 ```
 
-Copy the printed `TWILIO_MEMORY_STORE_ID` and `TWILIO_CONVERSATION_CONFIGURATION_ID`
-into `.env`. Do **not** seed the Memory profile yet - that's Section 3.
+This writes `TWILIO_MEMORY_STORE_ID`, `TWILIO_CONVERSATION_CONFIGURATION_ID`, and
+`TWILIO_MEMORY_PROFILE_ID` into `.env` (only where missing or a placeholder), also seeds the
+Memory profile, and sets the phone number's Voice URL if `TWILIO_VOICE_PUBLIC_DOMAIN` is set.
+To demo Section 3 step by step instead, use `npm run setup:memory-store` and
+`npm run setup:conversation-config`.
 
 ### 0.3 Start the tunnel
 
@@ -382,7 +385,7 @@ npm run profile
 by the platform on the CLOSED/INACTIVE transition of a real conversation, per
 §4.5 of [RUNBOOK_SETUP.md](./RUNBOOK_SETUP.md).)
 
-Copy the printed `TWILIO_MEMORY_PROFILE_ID` into `.env` for reference.
+`TWILIO_MEMORY_PROFILE_ID` is written into `.env` if it's missing or a placeholder.
 
 > **If you already created `Loyalty` and `Travel` manually via
 > [RUNBOOK_SETUP.md](./RUNBOOK_SETUP.md) §3**, step 1 will error on the

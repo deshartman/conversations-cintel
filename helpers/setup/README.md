@@ -47,11 +47,18 @@ Run the full setup:
 npm run setup
 ```
 
-The script prints the generated IDs at the end. Copy them into `.env`:
+It also seeds the passenger profile and trait groups (`helpers/profile/`) and, when
+`TWILIO_VOICE_PUBLIC_DOMAIN` is set, points `TWILIO_PHONE_NUMBER`'s Voice webhook at
+`https://<domain>/twiml` (`npm run setup:phone-number`). Intelligence (steps 3-4) is skipped unless
+the operator ID vars are set.
+
+Generated IDs are written into `.env` only when the key is missing or still a placeholder; a real
+existing ID is reused instead of creating a new resource:
 
 ```bash
 TWILIO_MEMORY_STORE_ID=
 TWILIO_CONVERSATION_CONFIGURATION_ID=
+TWILIO_MEMORY_PROFILE_ID=
 TWILIO_INTELLIGENCE_CONFIGURATION_ID=
 ```
 

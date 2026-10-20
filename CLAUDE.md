@@ -13,8 +13,9 @@ what isn't written there.
 npm install
 npm run preflight             # read-only: env vars, both credentials, Conversations terms accepted
 npm start                     # = npm run dev; Fastify on $PORT (default 8000)
-npm run setup                 # provision Memory Store + Orchestrator config (+ Intelligence, see below)
-npm run profile               # seed Avery Stone's Memory profile (needs TWILIO_MEMORY_STORE_ID)
+npm run setup                 # Memory Store + Orchestrator config + profile/traits + phone Voice URL; writes IDs to .env
+npm run profile               # re-seed only Avery Stone's Memory profile (needs TWILIO_MEMORY_STORE_ID)
+npm run setup:phone-number    # point TWILIO_PHONE_NUMBER's Voice URL at https://$TWILIO_VOICE_PUBLIC_DOMAIN/twiml
 npm run setup:cleanup         # dry run; :apply actually deletes
 npm run profile:cleanup       # dry run; :apply actually deletes
 ```
@@ -84,12 +85,14 @@ both -> tac.onMessageReady -> handleMessageReady (src/services/agent.js)
 
 ## Known doc/code mismatches (don't "fix" silently, but mention them if relevant)
 
-- AGENTS.md excludes Conversation Intelligence from app code, yet `npm run setup` runs steps 3-4 (Intelligence
-  config + attach), which need `TWILIO_INTELLIGENCE_*_OPERATOR_ID` vars absent from `.env.example`.
-  Run steps 1-2 individually to skip Intelligence. For the demo, Intelligence is set up **manually
-  in the Console** following `assets/conversation-intelligence.md`.
-- `helpers/setup/2_create_conversation_config.js` does not set `statusCallbacks`, so SMS never
-  reaches the app until they're added (Console or API; see the `twilio-provision` skill, step 2b).
+- `npm run setup` skips Intelligence (steps 3-4) unless the `TWILIO_INTELLIGENCE_*_OPERATOR_ID` vars
+  (absent from `.env.example`) are set. For the demo, Intelligence is set up **manually in the
+  Console** following `assets/conversation-intelligence.md`.
+- `npm run setup` reuses any real ID already in `.env` and only writes keys that are missing or still
+  contain `xxxx`. To provision fresh resources, reset those keys to placeholders first.
+- `helpers/setup/2_create_conversation_config.js` sets `statusCallbacks` to
+  `https://$TWILIO_VOICE_PUBLIC_DOMAIN/webhook` only on create. Setup reuses an existing config, so a
+  config made earlier (or a changed tunnel URL) needs it added in the Console or via API.
 - `SYSTEM_INSTRUCTIONS` hardcodes the Avery Stone scenario and lists tools by name. Keep it in sync
   when adding or removing tools.
 

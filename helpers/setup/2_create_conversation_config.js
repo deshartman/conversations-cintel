@@ -10,6 +10,7 @@
 import {
   extractOperationResultId,
   isMainModule,
+  isPlaceholderValue,
   loadEnv,
   prettyPrint,
   requireEnv,
@@ -25,6 +26,20 @@ export async function createConversationConfig({ memoryStoreId } = {}) {
   const storeId = memoryStoreId || requireEnv('TWILIO_MEMORY_STORE_ID');
 
   const displayName = `${process.env.CONVERSATION_CONFIG_NAME || 'OwlAir'}-${timestampSlug()}`;
+  // statusCallbacks is how Orchestrator tells TAC (POST /webhook) about new
+  // SMS communications. Without it, captured SMS never reach the app.
+  const voiceDomain = (process.env.TWILIO_VOICE_PUBLIC_DOMAIN || '')
+    .replace(/^https?:\/\//, '')
+    .replace(/\/+$/, '');
+  const hasDomain = !isPlaceholderValue(voiceDomain) && voiceDomain !== 'your-domain.ngrok.io';
+  const statusCallbacks = hasDomain
+    ? [{ url: `https://${voiceDomain}/webhook`, method: 'POST' }]
+    : [];
+  if (!hasDomain) {
+    console.log('Warning: TWILIO_VOICE_PUBLIC_DOMAIN not set; creating config without statusCallbacks.');
+    console.log('SMS will not reach the app until a statusCallbacks URL is added.');
+  }
+
   const captureRules = [
     { from: twilioPhoneNumber, to: '*', metadata: {} },
     { from: '*', to: twilioPhoneNumber, metadata: {} },
@@ -36,6 +51,7 @@ export async function createConversationConfig({ memoryStoreId } = {}) {
     conversationGroupingType: 'GROUP_BY_PROFILE',
     memoryStoreId: storeId,
     memoryExtractionEnabled: true,
+    statusCallbacks,
     channelSettings: {
       SMS: {
         captureRules,

@@ -25,7 +25,8 @@
     "profile:observations": "node helpers/profile/3_add_observations.js",
     "profile:verify": "node helpers/profile/4_verify_memory.js",
     "profile:cleanup": "node helpers/profile/0_cleanup.js",
-    "profile:cleanup:apply": "node helpers/profile/0_cleanup.js --yes"
+    "profile:cleanup:apply": "node helpers/profile/0_cleanup.js --yes",
+    "setup:phone-number": "node helpers/setup/5_configure_phone_number.js"
   },
   "dependencies": {
     "@fastify/static": "^10.1.6",

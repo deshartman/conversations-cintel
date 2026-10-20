@@ -5,7 +5,7 @@
 //   node helpers/profile/run_all.js <TWILIO_MEMORY_STORE_ID>
 //   npm run profile
 
-import { loadEnv, requireTwilioAuth } from '../common.js';
+import { loadEnv, requireTwilioAuth, writeEnvIfMissing } from '../common.js';
 import { runPreflight } from '../setup/0_preflight.js';
 import { createTraitGroups } from './1_create_trait_groups.js';
 import { createPassengerProfile } from './2_create_profile.js';
@@ -32,6 +32,7 @@ console.log('');
 
 console.log('Step 2: Create passenger profile');
 const { id: profileId } = await createPassengerProfile({ memoryStoreId });
+writeEnvIfMissing('TWILIO_MEMORY_PROFILE_ID', profileId);
 console.log('');
 
 console.log('Step 3: Add observations');
@@ -47,5 +48,4 @@ console.log('====================================');
 console.log('Profile setup complete');
 console.log('====================================');
 console.log('');
-console.log('Add this value to .env:');
 console.log(`TWILIO_MEMORY_PROFILE_ID=${profileId}`);

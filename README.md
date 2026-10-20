@@ -37,15 +37,16 @@ Provision Twilio resources using the helpers (run from the repo root):
 
 ```bash
 npm run preflight  # read-only: env vars, credentials, Conversations terms accepted
-npm run setup      # Memory Store + Conversation Configuration + Intelligence
-npm run profile    # Memory profile + trait groups + observations
+npm run setup      # Memory Store + Conversation Configuration + profile/traits + phone Voice URL
+npm run profile    # (optional) re-seed just the Memory profile + trait groups + observations
 ```
 
-`npm run setup` steps 3-4 (Intelligence) need operator IDs. For the demo, run
-`npm run setup:memory-store` and `npm run setup:conversation-config` instead, then set up
-Intelligence manually with [assets/conversation-intelligence.md](assets/conversation-intelligence.md).
-
-Copy the resulting IDs into `.env`.
+`npm run setup` writes new IDs into `.env` when the key is missing or still a placeholder, and reuses
+any real ID already there. It skips Intelligence unless the `TWILIO_INTELLIGENCE_*_OPERATOR_ID` vars
+are set; for the demo, set up Intelligence manually with
+[assets/conversation-intelligence.md](assets/conversation-intelligence.md). If
+`TWILIO_VOICE_PUBLIC_DOMAIN` is set, it also points `TWILIO_PHONE_NUMBER`'s Voice webhook at
+`https://<domain>/twiml` (rerun alone with `npm run setup:phone-number`).
 
 ## Local dev server
 

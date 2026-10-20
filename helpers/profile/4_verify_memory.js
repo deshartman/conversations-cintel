@@ -19,7 +19,9 @@ import {
 
 const MAX_ATTEMPTS = 5;
 
-export async function verifyPassengerMemory({ memoryStoreId, profileId } = {}) {
+// `fatal: false` lets callers like setup/run_all.js keep going when indexing is
+// still catching up, instead of exiting the whole process.
+export async function verifyPassengerMemory({ memoryStoreId, profileId, fatal = true } = {}) {
   const storeId = memoryStoreId || requireEnv('TWILIO_MEMORY_STORE_ID');
   const profId = profileId || requireEnv('TWILIO_MEMORY_PROFILE_ID');
 
@@ -48,6 +50,10 @@ export async function verifyPassengerMemory({ memoryStoreId, profileId } = {}) {
       prettyPrint(response);
       console.error('');
       console.error('No observations returned yet. Observation processing may still be catching up.');
+      if (!fatal) {
+        console.error('Re-check in ~30s with: npm run profile:verify');
+        return null;
+      }
       process.exit(1);
     }
 

@@ -5,6 +5,7 @@
 // operation-polling / resource-id extraction that the previous shell
 // helpers (`helpers/common.sh`) implemented with curl + jq.
 
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
@@ -32,6 +33,36 @@ export function requireEnv(name) {
     process.exit(1);
   }
   return value;
+}
+
+// True when an env value is unset or still the `.env.example` placeholder
+// (e.g. `mem_store_xxxxxxxxx`).
+export function isPlaceholderValue(value) {
+  return !value || /xxxx/.test(value);
+}
+
+// Writes `name=value` into `.env` only if the key is missing or still a
+// placeholder. An existing real value is left alone (with a warning when it
+// differs) so setup never silently repoints a working demo.
+export function writeEnvIfMissing(name, value) {
+  const text = fs.existsSync(ENV_FILE) ? fs.readFileSync(ENV_FILE, 'utf8') : '';
+  const line = new RegExp(`^${name}=(.*)$`, 'm');
+  const current = text.match(line)?.[1]?.trim().replace(/^["']|["']$/g, '');
+
+  if (!isPlaceholderValue(current)) {
+    if (current !== value) {
+      console.log(`  .env already has ${name}=${current}; left unchanged (new value: ${value}).`);
+    }
+    return false;
+  }
+
+  const updated = current !== undefined
+    ? text.replace(line, `${name}=${value}`)
+    : `${text}${text && !text.endsWith('\n') ? '\n' : ''}${name}=${value}\n`;
+  fs.writeFileSync(ENV_FILE, updated);
+  process.env[name] = value;
+  console.log(`  Wrote ${name}=${value} to .env`);
+  return true;
 }
 
 export function requireTwilioAuth() {
