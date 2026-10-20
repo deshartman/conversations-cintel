@@ -57,7 +57,7 @@ both -> tac.onMessageReady -> handleMessageReady (src/services/agent.js)
         -> runToolLoop (<= MAX_TOOL_ITERATIONS=5 OpenAI chat.completions calls)
         -> return string = reply TAC speaks/sends
 CI:    Intelligence rule (live trigger, webhook action) -> POST /ci-webhook (TAC, if enabled)
-        -> capture hook -> GET /api/sessions/:id/events|signals -> dashboard timeline + signals
+        -> capture hook -> GET /api/sessions/:id/events -> dashboard Intelligence panel + Events timeline
 ```
 
 - `src/server.js` owns the Fastify instance, registers `/static/*` + dashboard routes, then hands

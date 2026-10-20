@@ -75,8 +75,8 @@ export function captureCiPayload(payload) {
   }
 }
 
-// Latest intent / offer_coupon plus how each changed over time, for the
-// "Current signals" panel. `history` only records value changes.
+// Latest intent / offer_coupon plus how each changed over time, for
+// GET /api/sessions/:id/signals. `history` only records value changes.
 export function ciSignals(events) {
   const out = {
     intent: { latest: null, history: [] },
