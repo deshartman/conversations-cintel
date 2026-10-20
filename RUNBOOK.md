@@ -236,8 +236,8 @@ In the dev-phone UI, dial the **agent number** (`TWILIO_PHONE_NUMBER`).
 - Voice reply from the agent (generic - it doesn't know who's calling)
 - Dashboard sidebar populates with a new conversation, channel VOICE
 - Live transcript shows caller + agent turns
-- Tool events panel shows `check_trip_and_seats` fired with results from
-  `assets/trip.json`
+- Events timeline shows a Tool row for `check_trip_and_seats` (expand it for
+  the args and the result from `assets/trip.json`)
 
 **SAY** *"The agent answered. Notice what it did **not** do: greet me by name.
 The Memory Store is empty for this caller. Same LLM, no persistence yet."*
@@ -437,7 +437,7 @@ From the dev-phone (same spare number), dial the **agent number**.
 - Dashboard: new VOICE conversation, but note the sidebar - the earlier SMS
   conversation may **merge** into the same thread because
   `GROUP_BY_PROFILE` links them
-- Tool events show `check_trip_and_seats` firing with the seat preference from
+- Tool rows in Events show `check_trip_and_seats` firing with the seat preference from
   Memory
 
 **SAY** *"Same code, same LLM, same tools. What changed is the persistent

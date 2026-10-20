@@ -95,8 +95,12 @@ it receives.
 ## 4. Show the results
 
 Open the dashboard (`/`), select the conversation, then call or text as Avery. After each turn the
-**Events** timeline gets new Intelligence rows and **Current signals** updates. For example, intent
-goes Change seats → Add check-in baggage → Loyalty recovery, and offer coupon flips from "no" to a
-green **YES** after a frustrated delay message. The same results are also visible in the Console.
+**Intelligence** panel under Conversations (left column) updates in place, with one row per operator
+showing its latest result (offer-coupon and Intent-Recognition first, then Sentiment and any other
+operator). The right-column **Events** timeline gets a new Intelligence row for each result, next
+to Orchestrator and Tool rows. Caller/agent messages are only in the transcript. For example, intent
+goes Change seats → Add check-in baggage → Loyalty recovery (earlier values show as a "was:" trail),
+and offer coupon flips from "no" to a green **YES** after a frustrated delay message. The same
+results are also visible in the Console.
 
 The webhook is signed against the public URL, so the tunnel must forward the original host.

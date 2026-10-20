@@ -184,6 +184,60 @@ turn 3, so there was no reload. 12 timeline items, scrolled to bottom, 0 console
 The mock has no transcript or tool events (no dashboard record), so Caller/Agent/Tool badges were not
 exercised live; they render from the Phase 1 `/events` shapes.
 
+## Phase 4: view cleanup
+
+The page was too busy, so this phase cuts duplication. It is UI-only: `src/static/dashboard.{html,js,css}`.
+No API changes.
+
+What changed:
+
+- **Intelligence panel** (left column, under Conversations; capped at 60% of the column height, scrolls).
+  One row per operator seen for the selected conversation: label = operator name, value = latest
+  result. Order: `offer-coupon`, `Intent-Recognition`, then the rest A-Z. Signal operators show the
+  bare value (`YES`/`no`, the intent description), and everything else shows the event's `detail`. Green
+  bold YES for `offer_coupon: true`. A "was:" trail of up to 3 earlier distinct values appears only for the
+  two signal operators. When a value changes, the cell gets a `.flash` background that is removed after 1.5s (CSS
+  fade). There is no flash on first render or when switching conversations.
+- **Current signals panel removed**, with its HTML, `renderSignal(s)`, and `.signal-*` CSS. The panel
+  now derives everything client-side from `/events` (`latestPerOperator`), so the `/signals` fetch
+  is gone. The `/api/sessions/:id/signals` route and `ciSignals` stay.
+- **Tool events panel removed** from the centre column. The transcript fills it (`.content` is now
+  2 rows). Tool rows in Events show the tool name and time, plus a `<details>` (collapsed) whose summary is
+  the one-line args JSON (ellipsised), or `error: ...` for failed tools. Expanding it shows Args and
+  Result `<pre>` blocks. The open state is kept in a `Set` keyed by `tool|created_at`, so the 2s
+  re-render doesn't collapse it. Failed tools keep the red badge and get a red summary.
+- **Caller/Agent rows removed** from the Events timeline, filtered client-side
+  (`kind !== 'message'`). `/events` still returns `message` items, so the documented `events[]` shape
+  is unchanged.
+
+Decisions:
+
+- **Intelligence rows stay in the Events timeline.** The panel shows the latest value, and the timeline
+  shows when each result arrived relative to Orchestrator and Tool events. The YES row highlight is kept.
+- Client-side derivation instead of a new server summary. The data is already in the polled
+  `/events`, and this saves one request per poll.
+- New colour tokens `--flash-bg` and `--code-bg` have light and dark values.
+
+Verification, run 2026-10-20. `node --check src/static/dashboard.js` passed. The branch was booted on
+8010 with a temp `.env` (main's, plus `PORT=8010`, `TAC_ANALYTICS_DISABLED=true`, and
+`TWILIO_TAC_CI_CONFIGURATION_ID` so `/ci-webhook` exists). The `.env` was deleted afterwards.
+
+- Playwright `page.route` fulfilled `/api/conversations*` and `/api/sessions/*/events` with JSON from
+  the real conversation on 8000 (6 turns, 2 `check_trip_and_seats` tool calls, Orchestrator, and 18 CI
+  results). Two synthetic items were added: a failed `send_sms` tool and a `Next Best Response`
+  operator. The first 33 events were served, then all 42. Without a reload (a window marker survived),
+  offer-coupon went `no` -> `YES` (`was: no`), the intent trail showed the last 3 earlier values, and
+  Sentiment went `neutral` -> `negative`. 3 cells flashed and 0 were still flashing 4s later. The
+  timeline had 36 items with 0 message rows. Of the 3 tool rows, 1 was failed. The expanded tool stayed
+  open across re-renders. `/signals` was requested 0 times, there was no horizontal scroll, and the
+  console had 0 errors.
+- Live on 8010 without mocks: `/tmp/ci-mock/post_turn.mjs 1..3` (unsigned -> TAC 403, captured)
+  updated the panel to coupon `YES` (`was: no`), intent `Loyalty recovery` (`was: Change seats ->
+  Add check-in baggage`), and Sentiment `negative`, with 12 timeline items and no reload.
+- Screenshots in `/tmp/dashboard-cleanup-shots/`: `before.png` (main, from 8000), `after.png`,
+  `after-update-flash.png` (mid-flash), `after-update.png`, `after-dark.png` (dark, failed tool
+  expanded), and `live-mock-turn3.png`.
+
 ## Open questions
 
 - Which CI configuration ID should `TWILIO_TAC_CI_CONFIGURATION_ID` hold?
