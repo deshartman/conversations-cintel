@@ -7,7 +7,7 @@ import {
   addTranscriptTurn,
   ensureDashboardConversation,
 } from '../repositories/conversations.js';
-import { couponIssued, couponOffered } from '../tools/coupon.js';
+import { couponIssued, couponOffered, noteCallerTurn } from '../tools/coupon.js';
 import { allHandlers, allSchemas } from '../tools/registry.js';
 
 // Per-conversation OpenAI chat message history. Handoff/CI status messages
@@ -46,12 +46,14 @@ async function dispatchToolCall(call, context, handlers, convId) {
   return result;
 }
 
-async function runToolLoop(convId, history, tools, handlers, context) {
+async function runToolLoop(convId, history, tools, handlers, context, forceTool) {
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i += 1) {
     const response = await openaiClient.chat.completions.create({
       model: MODEL,
       messages: history,
       tools,
+      // Force a tool on the first call only, e.g. the Intelligence-approved coupon.
+      ...(i === 0 && forceTool && { tool_choice: { type: 'function', function: { name: forceTool } } }),
     });
     const msg = response.choices[0].message;
     // Persist the assistant turn (with any tool_calls) so subsequent tool
@@ -78,15 +80,15 @@ export async function handleMessageReady(event, { tac } = {}) {
   const { conversationId, message, memory, session } = event;
   const context = event; // TAC context: pass through to tools that read author info
   ensureDashboardConversation(conversationId, context, memory);
+  noteCallerTurn(conversationId);
 
   const history = getHistory(conversationId);
   // MemoryPromptBuilder returns the system prompt with caller memory folded in;
   // reset the system message every turn so refreshed memory takes effect.
   // The latest Intelligence results arrive via /ci-webhook between turns.
-  const note = intelligenceNote({
-    couponOffered: couponOffered(conversationId),
-    couponIssued: couponIssued(conversationId),
-  });
+  const offered = couponOffered(conversationId);
+  const issued = couponIssued(conversationId);
+  const note = intelligenceNote({ couponOffered: offered, couponIssued: issued });
   const instructions = note ? `${SYSTEM_INSTRUCTIONS}\n${note}\n` : SYSTEM_INSTRUCTIONS;
   const systemPrompt = MemoryPromptBuilder.compose(instructions, memory, session);
   if (history.length === 0) {
@@ -101,7 +103,10 @@ export async function handleMessageReady(event, { tac } = {}) {
   const tools = allSchemas();
   const handlers = allHandlers();
 
-  const reply = await runToolLoop(conversationId, history, tools, handlers, context);
+  // The model tends to ignore the note, so once Intelligence approves a coupon
+  // the first model call this turn must issue it.
+  const forceTool = offered && !issued ? 'offer_recovery_coupon' : undefined;
+  const reply = await runToolLoop(conversationId, history, tools, handlers, context, forceTool);
   addTranscriptTurn(conversationId, 'agent', reply);
   return reply;
 }

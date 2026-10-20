@@ -29,7 +29,9 @@ The KB treats OA404 as **cancelled** with OA500 as the replacement.
 ## Canonical scenario (aligned 2026-10-19)
 
 Avery Stone, Owl Club Gold, **OA404 London (LHR) → San Francisco (SFO), tomorrow 7:00 PM, seat 18B**,
-who wants a window seat near the front (7A / 8F / 10A). Aligned across `assets/trip.json`, the Memory
+who wants a window seat near the front (7A / 8F / 10A). OA404 is **delayed to 10:00 PM** (late inbound
+aircraft, set in `assets/trip.json`); the agent proposes 7A and texts a recovery coupon once Intelligence
+says so. Aligned across `assets/trip.json`, the Memory
 observations (`helpers/profile/3_add_observations.js`), `src/core/prompts.js`, README, and the runbooks.
 The KB also describes OA404 as **cancelled with OA500 as the replacement**. That's a possible demo
 twist (rebooking plus a pet on OA500), but nothing else in the app models a cancellation yet.

@@ -63,9 +63,12 @@ CI:    Intelligence rule (live trigger, webhook action) -> POST /ci-webhook (TAC
         -> next turn: intelligenceNote() in the system prompt -> offer_recovery_coupon tool
 ```
 
-- Coupon: `src/tools/coupon.js` issues one fake coupon per conversation, only while the latest
-  `offer-coupon` result is true. CI results arrive after the turn that produced them, so the agent
-  offers it on the caller's *next* message.
+- Coupon: `src/tools/coupon.js` issues one fake coupon per conversation and texts it via
+  `sendTextMessage`. It only counts Intelligence results from after the caller's reaction to the delay
+  (the first caller turn after `check_trip_and_seats` reported it), and needs Sentiment `negative` plus
+  `offer-coupon` true. Earlier results in the same Twilio conversation are ignored. CI results arrive after the turn
+  that produced them, so the agent offers it on the caller's *next* message. `agent.js` forces that
+  call with `tool_choice` (the model ignored the prompt note alone).
 
 - `src/server.js` owns the Fastify instance, registers `/static/*` + dashboard routes, then hands
   Fastify to `TACServer`. TAC adds its own `/twiml`, `/ws`, `/webhook`, and

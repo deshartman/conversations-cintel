@@ -8,7 +8,10 @@
     "flight_number": "OA404",
     "origin": "LHR",
     "destination": "SFO",
-    "departure": "tomorrow at 7:00 PM"
+    "status": "Delayed",
+    "scheduled_departure": "tomorrow at 7:00 PM",
+    "departure": "tomorrow at 10:00 PM",
+    "delay_reason": "late inbound aircraft"
   },
   "seat": {
     "current": "18B",
