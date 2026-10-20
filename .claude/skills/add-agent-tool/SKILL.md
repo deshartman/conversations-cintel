@@ -29,5 +29,7 @@ together in `src/tools/registry.js` and consumed by `runToolLoop` in `src/servic
 
 ## Rules
 
-- Keep tools inside the demo scope from AGENTS.md (no Studio handoff, no Intelligence, no persistence).
+- Keep tools inside the demo scope from AGENTS.md (no Studio handoff, no persistence).
+  Tools may read captured Intelligence results (see `src/tools/coupon.js`) but must not call
+  Intelligence APIs.
 - Don't change `MAX_TOOL_ITERATIONS` or the loop shape in `agent.js` just to add a tool.

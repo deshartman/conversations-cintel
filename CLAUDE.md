@@ -58,7 +58,12 @@ both -> tac.onMessageReady -> handleMessageReady (src/services/agent.js)
         -> return string = reply TAC speaks/sends
 CI:    Intelligence rule (live trigger, webhook action) -> POST /ci-webhook (TAC, if enabled)
         -> capture hook -> GET /api/sessions/:id/events -> dashboard Intelligence panel + Events timeline
+        -> next turn: intelligenceNote() in the system prompt -> offer_recovery_coupon tool
 ```
+
+- Coupon: `src/tools/coupon.js` issues one fake coupon per conversation, only while the latest
+  `offer-coupon` result is true. CI results arrive after the turn that produced them, so the agent
+  offers it on the caller's *next* message.
 
 - `src/server.js` owns the Fastify instance, registers `/static/*` + dashboard routes, then hands
   Fastify to `TACServer`. TAC adds its own `/twiml`, `/ws`, `/webhook`, and
