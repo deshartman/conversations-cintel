@@ -15,12 +15,13 @@ into a single OpenAI-backed agent with tool calling and a small operator dashboa
 - Conversation Orchestrator groups Voice + SMS into one conversation
 - Conversation Memory profile lookup and Recall injected into the system prompt
 - OpenAI tool calling against local Owl Airlines demo tools
-- Lightweight dashboard for observing state
+- Lightweight dashboard for observing state, including Conversation Intelligence operator results
+  posted to `/ci-webhook` (only registered when `TWILIO_TAC_CI_CONFIGURATION_ID` is set). The
+  operators and rule are still configured manually in the Console; see
+  `assets/conversation-intelligence.md`.
 
 Explicitly NOT included in this port:
 
-- Conversation Intelligence in app code (no `/ci-webhook`). The demo configures it manually in the
-  Console instead; see `assets/conversation-intelligence.md`.
 - Studio handoff flow
 - Production persistence (all demo state is in-memory)
 

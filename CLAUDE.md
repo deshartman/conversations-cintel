@@ -41,6 +41,11 @@ For offline checks, import modules directly, e.g.
   content or phone numbers). Set `TAC_ANALYTICS_DISABLED=true` to turn it off.
 - App-only: `OPENAI_API_KEY`, `OPENAI_MODEL`, `PORT`, `DEMO_CALLER_PHONE_NUMBER`, optional
   `TWILIO_MESSAGING_SERVICE_SID`.
+- `TWILIO_TAC_CI_CONFIGURATION_ID` (optional): when set, `src/server.js` passes
+  `webhookPaths: { cintel: '/ci-webhook' }` to TAC; unset means `/ci-webhook` returns 404. TAC only
+  processes results from this one Intelligence configuration, but the dashboard capture hook
+  (`src/services/capture.js`, a `preValidation` hook that runs before TAC's signature check) stores
+  every operator result regardless. `TWILIO_TAC_CI_SUMMARY_OPERATOR_SID` is optional.
 
 ## Request flow
 
@@ -51,6 +56,8 @@ both -> tac.onMessageReady -> handleMessageReady (src/services/agent.js)
         -> MemoryPromptBuilder.compose(SYSTEM_INSTRUCTIONS, memory, session)  # system msg reset each turn
         -> runToolLoop (<= MAX_TOOL_ITERATIONS=5 OpenAI chat.completions calls)
         -> return string = reply TAC speaks/sends
+CI:    Intelligence rule (live trigger, webhook action) -> POST /ci-webhook (TAC, if enabled)
+        -> capture hook -> GET /api/sessions/:id/events|signals -> dashboard timeline + signals
 ```
 
 - `src/server.js` owns the Fastify instance, registers `/static/*` + dashboard routes, then hands

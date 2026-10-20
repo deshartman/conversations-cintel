@@ -83,11 +83,20 @@ The attached Conversation Configuration controls *which* conversations get analy
 On the new Intelligence configuration, click **Create rule**:
 
 - **Operators:** add `offer-coupon` and `Intent-Recognition`.
-- **Trigger:** choose live (during the conversation) or **At conversation end**.
-- **Action:** keep the results in the Console. This app has **no `/ci-webhook` route**, so a webhook
-  action pointed at the app would return 404.
+- **Trigger:** choose live (during the conversation) to see results after every turn. **At
+  conversation end** only produces one set of results, after the conversation closes.
+- **Action:** webhook, `POST https://$TWILIO_VOICE_PUBLIC_DOMAIN/ci-webhook`.
+
+In the app's `.env`, set `TWILIO_TAC_CI_CONFIGURATION_ID` to **this** Intelligence configuration's ID
+(`intelligence_configuration_...`), then restart the app. Without it, `/ci-webhook` returns 404. TAC
+only processes results from that one configuration, though the dashboard still shows every result
+it receives.
 
 ## 4. Show the results
 
-Run a test call or SMS as Avery, then open the conversation in the Console to show the operator
-results. For example: intent "Change seats", and `offer_coupon: true` after a frustrated delay message.
+Open the dashboard (`/`), select the conversation, then call or text as Avery. After each turn the
+**Events** timeline gets new Intelligence rows and **Current signals** updates. For example, intent
+goes Change seats → Add check-in baggage → Loyalty recovery, and offer coupon flips from "no" to a
+green **YES** after a frustrated delay message. The same results are also visible in the Console.
+
+The webhook is signed against the public URL, so the tunnel must forward the original host.

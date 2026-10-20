@@ -53,10 +53,10 @@ response are secondary and are rendered generically.
 
 ### Phase 3: docs
 
-- [ ] `assets/conversation-intelligence.md`: webhook action to
+- [x] `assets/conversation-intelligence.md`: webhook action to
       `https://$TWILIO_VOICE_PUBLIC_DOMAIN/ci-webhook`, live trigger (during the conversation), config
       ID must match `TWILIO_TAC_CI_CONFIGURATION_ID`, remove the "no /ci-webhook route" warning
-- [ ] README / AGENTS.md / CLAUDE.md: new routes, env vars, `/ci-webhook` only when the var is set
+- [x] README / AGENTS.md / CLAUDE.md: new routes, env vars, `/ci-webhook` only when the var is set
       (AGENTS.md "Explicitly NOT included" currently says no `/ci-webhook`)
 
 ## Decisions
