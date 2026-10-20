@@ -36,18 +36,19 @@ response are secondary and are rendered generically.
 - [x] `.env.example`: `TWILIO_TAC_CI_CONFIGURATION_ID`, `TWILIO_TAC_CI_SUMMARY_OPERATOR_SID`
 - [x] Verification: `node --check`, formatter unit check, boot on 8010, 3-turn mock
 
-### Phase 2: UI
+### Phase 2: UI (timeline + signals done; rest is Phase 2b)
 
-- [ ] Port the upstream layout to `/` (sessions list, transcript, Agent Context, Events, History)
-- [ ] Events timeline built on `/api/sessions/:id/events`, with Orchestrator / Intelligence / Tool
+- [ ] (2b) Port the upstream layout to `/` (sessions list, transcript, Agent Context, Events, History)
+- [x] Events timeline built on `/api/sessions/:id/events`, with Orchestrator / Intelligence / Tool
       badges; `offer-coupon` YES highlighted
-- [ ] "Current signals" block in Agent Context built on `/api/sessions/:id/signals`
-- [ ] Poll events + signals (~1-2s) for the selected session so results appear without reload
-- [ ] Remaining upstream APIs as the UI needs them: `/api/sessions`, `/api/sessions/:id/messages`,
+- [x] "Current signals" panel built on `/api/sessions/:id/signals` (right column; Agent Context is 2b)
+- [x] Poll events + signals (~1-2s) for the selected session so results appear without reload
+- [ ] (2b) Remaining upstream APIs as the UI needs them: `/api/sessions`, `/api/sessions/:id/messages`,
       `/api/sessions/:id/context`, `/api/profiles/:id/memory`, `/api/history`,
       `/api/history/:id/messages` (TAC `getMemoryClient().getProfile/retrieveMemories`,
       `getConversationClient().listConversations/listCommunications`)
-- [ ] Tool events: record `running` before the handler and update to `completed`/`failed`
+- [x] `?conversation=<id>` selects a conversation directly, including one with no dashboard record
+- [ ] (2b) Tool events: record `running` before the handler and update to `completed`/`failed`
       (upstream shape) in `src/services/agent.js`
 
 ### Phase 3: docs
@@ -85,6 +86,21 @@ response are secondary and are rendered generically.
   `created_at`).
 - **`/ci-webhook` gating**: route is not registered at all without `TWILIO_TAC_CI_CONFIGURATION_ID`
   (404), rather than TAC's 400.
+- **Phase 2 UI is additive.** A third column (`.insights`, 400px) on the existing dashboard holds
+  "Current signals" above an "Events" timeline. The existing conversation list, transcript and Tool
+  events panel are unchanged. Upstream's full layout (Agent Context, History, stats bar) is Phase 2b.
+- **Polling**: `pollInsights()` fetches `/events` and `/signals` every 2s (the conversation list keeps
+  its 3s poll). It re-renders only when `JSON.stringify([id, events, signals])` changed, and drops a
+  response if the selection changed while it was in flight. Signals render before the timeline so
+  the timeline's scroll-to-bottom uses its final height.
+- **`?conversation=<id>`** pins the selection, so `renderList` doesn't replace it with the first
+  listed conversation. When the ID is not in `/api/conversations`, `loadSelected` skips
+  `/api/conversations/:id` (no 404 console noise every 3s) and shows the ID as the title.
+- **Badges**: Caller / Agent (message), Orchestrator (purple, title `event_type`), Intelligence
+  (green, title = operator, body = `detail`), Tool (indigo, red when `status: failed`, body =
+  arguments JSON). Colours follow upstream's `badge-*` palette. An `offer_coupon: true` event gets a
+  green row with bold "Offer coupon: YES". The signal values are 20px; the coupon value turns green on
+  YES. Trails (`a -> b -> c`) show only once `history` has more than one change.
 
 ## Deviations from Python
 
@@ -153,6 +169,20 @@ payload to `/ci-webhook` with `Intent-Recognition`, `offer-coupon`, `Sentiment`:
 `/events` after turn 3: 12 items in time order, an orchestrator `COMMUNICATION_CREATED` followed by
 three intelligence items per turn (`Intent: ...`, `Offer coupon: no|YES`, sentiment). Capture worked
 both when TAC rejected (403) and accepted (200). TAC wrote nothing to Memory (summary operator unset).
+
+Phase 2, run 2026-10-20 on 8010 (clean restart, page opened at
+`/?conversation=conv_conversation_01mockavery0000000000000001` *before* any turn, then
+`post_turn.mjs 1`, `2`, `3`, ~3s apart). A `window` marker set before turn 1 was still present after
+turn 3, so there was no reload. 12 timeline items, scrolled to bottom, 0 console errors.
+
+- `/tmp/ci-dashboard-shots/turn1.png`: intent "Change seats", coupon "no", 4 events.
+- `/tmp/ci-dashboard-shots/turn2.png`: intent "Add check-in baggage", trail "Change seats -> Add
+  check-in baggage", coupon "no", 8 events.
+- `/tmp/ci-dashboard-shots/turn3.png`: intent "Loyalty recovery" with full trail, coupon green "YES"
+  with trail "no -> YES", 12 events, the turn-3 offer-coupon row highlighted green.
+
+The mock has no transcript or tool events (no dashboard record), so Caller/Agent/Tool badges were not
+exercised live; they render from the Phase 1 `/events` shapes.
 
 ## Open questions
 

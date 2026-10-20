@@ -35,6 +35,29 @@
         </div>
       </details>
     </section>
+    <section class="insights">
+      <div class="panel signals" id="signalsPanel">
+        <div class="label">Current signals</div>
+        <div class="signal-grid">
+          <div class="signal">
+            <div class="signal-name">Intent</div>
+            <div class="signal-value" id="intentValue">-</div>
+            <div class="signal-trail muted" id="intentTrail"></div>
+          </div>
+          <div class="signal">
+            <div class="signal-name">Offer coupon</div>
+            <div class="signal-value" id="couponValue">-</div>
+            <div class="signal-trail muted" id="couponTrail"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel events">
+        <div class="label">Events</div>
+        <div class="events-body" id="eventsTimeline">
+          <div class="muted empty-note">No events yet.</div>
+        </div>
+      </div>
+    </section>
   </main>
   <script src="/static/dashboard.js" type="module"></script>
 </body>

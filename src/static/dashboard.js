@@ -1,5 +1,9 @@
-let selectedId = null;
+// ?conversation=<id> pins a conversation even when it has no dashboard
+// record (e.g. CI/Orchestrator webhooks only), so it is not in the list.
+const urlConversation = new URLSearchParams(window.location.search).get('conversation');
+let selectedId = urlConversation;
 let currentConversations = [];
+let lastInsights = null;
 
 const fmtTime = (value) => {
   if (!value) return '';
@@ -25,7 +29,7 @@ function renderList(conversations) {
     list.appendChild(el('div', 'muted empty-note', 'No conversations yet.'));
     return;
   }
-  if (!selectedId || !conversations.some((c) => c.id === selectedId)) {
+  if (!selectedId || (selectedId !== urlConversation && !conversations.some((c) => c.id === selectedId))) {
     selectedId = conversations[0].id;
   }
   for (const conv of conversations) {
@@ -50,6 +54,7 @@ function renderList(conversations) {
       selectedId = conv.id;
       renderList(currentConversations);
       loadSelected();
+      pollInsights();
     });
     list.appendChild(btn);
   }
@@ -146,6 +151,13 @@ async function loadSelected() {
     clearConversation();
     return;
   }
+  // A URL-pinned conversation may have only CI/Orchestrator events and no
+  // dashboard record; skip the fetch rather than 404 on every poll.
+  if (!currentConversations.some((c) => c.id === selectedId)) {
+    clearConversation();
+    document.getElementById('conversationTitle').textContent = selectedId;
+    return;
+  }
   try {
     const res = await fetch(`/api/conversations/${encodeURIComponent(selectedId)}`);
     if (!res.ok) {
@@ -165,7 +177,7 @@ async function refresh() {
     const data = await res.json();
     currentConversations = Array.isArray(data.conversations) ? data.conversations : [];
     renderList(currentConversations);
-    if (currentConversations.length) {
+    if (currentConversations.length || selectedId) {
       await loadSelected();
     } else {
       clearConversation();
@@ -175,5 +187,88 @@ async function refresh() {
   }
 }
 
+function eventItem(event) {
+  const item = el('div', `event-item ${event.kind}`);
+  const head = el('div', 'event-head');
+  let title = '';
+  let detail = '';
+  if (event.kind === 'message') {
+    const caller = event.role === 'user';
+    head.appendChild(el('span', `badge ${caller ? 'caller' : 'agent'}`, caller ? 'Caller' : 'Agent'));
+    detail = event.content;
+  } else if (event.kind === 'orchestrator') {
+    head.appendChild(el('span', 'badge orchestrator', 'Orchestrator'));
+    title = event.event_type;
+    detail = event.detail;
+  } else if (event.kind === 'intelligence') {
+    head.appendChild(el('span', 'badge intelligence', 'Intelligence'));
+    title = event.operator;
+    detail = event.detail;
+    if (event.signal?.type === 'offer_coupon' && event.signal.value === true) item.classList.add('coupon-yes');
+  } else if (event.kind === 'tool') {
+    head.appendChild(el('span', `badge tool ${event.status === 'failed' ? 'failed' : ''}`, 'Tool'));
+    title = event.tool;
+    detail = event.arguments && Object.keys(event.arguments).length ? JSON.stringify(event.arguments) : '';
+  }
+  if (title) head.appendChild(el('span', 'event-name', title));
+  head.appendChild(el('span', 'event-time muted', fmtTime(event.created_at)));
+  item.appendChild(head);
+  if (detail) item.appendChild(el('div', 'event-detail', detail));
+  return item;
+}
+
+function renderEvents(events) {
+  const container = document.getElementById('eventsTimeline');
+  container.replaceChildren();
+  if (!events.length) {
+    container.appendChild(el('div', 'muted empty-note', 'No events yet.'));
+    return;
+  }
+  for (const event of events) container.appendChild(eventItem(event));
+  container.scrollTop = container.scrollHeight;
+}
+
+const couponText = (value) => (value ? 'YES' : 'no');
+
+function renderSignal(valueId, trailId, signal, format) {
+  const valueEl = document.getElementById(valueId);
+  const latest = signal?.latest;
+  valueEl.textContent = latest ? format(latest.value) : '-';
+  valueEl.classList.toggle('yes', valueId === 'couponValue' && latest?.value === true);
+  const history = signal?.history ?? [];
+  document.getElementById(trailId).textContent =
+    history.length > 1 ? history.map((h) => format(h.value)).join(' \u2192 ') : '';
+}
+
+function renderSignals(signals) {
+  renderSignal('intentValue', 'intentTrail', signals.intent, String);
+  renderSignal('couponValue', 'couponTrail', signals.offer_coupon, couponText);
+}
+
+// Events + signals for the selected conversation. Re-renders only when the
+// combined payload changed, so the timeline does not jump between polls.
+async function pollInsights() {
+  const id = selectedId;
+  if (!id) return;
+  try {
+    const base = `/api/sessions/${encodeURIComponent(id)}`;
+    const [events, signals] = await Promise.all([
+      fetch(`${base}/events`).then((r) => r.json()),
+      fetch(`${base}/signals`).then((r) => r.json()),
+    ]);
+    if (id !== selectedId) return;
+    const key = JSON.stringify([id, events.events, signals]);
+    if (key === lastInsights) return;
+    lastInsights = key;
+    // Signals first: their height changes the timeline's, then scroll it.
+    renderSignals(signals);
+    renderEvents(events.events || []);
+  } catch {
+    // Retain last-known state on transient errors.
+  }
+}
+
 refresh();
 setInterval(refresh, 3000);
+pollInsights();
+setInterval(pollInsights, 2000);
