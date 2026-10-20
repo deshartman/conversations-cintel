@@ -3,11 +3,13 @@ import {
   checkTripAndSeats,
 } from './airline.js';
 import { sendTextMessageSchema, sendTextMessage } from './sms.js';
+import { offerRecoveryCouponSchema, offerRecoveryCoupon } from './coupon.js';
 
-const SCHEMAS = [checkTripAndSeatsSchema, sendTextMessageSchema];
+const SCHEMAS = [checkTripAndSeatsSchema, sendTextMessageSchema, offerRecoveryCouponSchema];
 const HANDLERS = {
   [checkTripAndSeatsSchema.function.name]: checkTripAndSeats,
   [sendTextMessageSchema.function.name]: sendTextMessage,
+  [offerRecoveryCouponSchema.function.name]: offerRecoveryCoupon,
 };
 
 export function allSchemas() {

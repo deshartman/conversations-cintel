@@ -1,12 +1,13 @@
 import { MemoryPromptBuilder } from 'twilio-agent-connect';
 import { MAX_TOOL_ITERATIONS, MODEL } from '../core/config.js';
-import { SYSTEM_INSTRUCTIONS } from '../core/prompts.js';
+import { SYSTEM_INSTRUCTIONS, intelligenceNote } from '../core/prompts.js';
 import { openaiClient } from '../integrations/openai.js';
 import {
   addToolEvent,
   addTranscriptTurn,
   ensureDashboardConversation,
 } from '../repositories/conversations.js';
+import { couponIssued, couponOffered } from '../tools/coupon.js';
 import { allHandlers, allSchemas } from '../tools/registry.js';
 
 // Per-conversation OpenAI chat message history. Handoff/CI status messages
@@ -81,7 +82,13 @@ export async function handleMessageReady(event, { tac } = {}) {
   const history = getHistory(conversationId);
   // MemoryPromptBuilder returns the system prompt with caller memory folded in;
   // reset the system message every turn so refreshed memory takes effect.
-  const systemPrompt = MemoryPromptBuilder.compose(SYSTEM_INSTRUCTIONS, memory, session);
+  // The latest Intelligence results arrive via /ci-webhook between turns.
+  const note = intelligenceNote({
+    couponOffered: couponOffered(conversationId),
+    couponIssued: couponIssued(conversationId),
+  });
+  const instructions = note ? `${SYSTEM_INSTRUCTIONS}\n${note}\n` : SYSTEM_INSTRUCTIONS;
+  const systemPrompt = MemoryPromptBuilder.compose(instructions, memory, session);
   if (history.length === 0) {
     history.push({ role: 'system', content: systemPrompt });
   } else {
