@@ -48,6 +48,24 @@ function renderList(conversations) {
     if (conv.channel) meta.appendChild(el('span', 'badge channel', String(conv.channel)));
     const started = fmtTime(conv.startedAt);
     if (started) meta.appendChild(el('span', null, started));
+    if (conv.status !== 'ended') {
+      // A span, not a button: it sits inside the row's <button>.
+      const close = el('span', 'close-btn', 'Close');
+      close.setAttribute('role', 'button');
+      close.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        if (!window.confirm(`Close ${conv.id}?`)) return;
+        close.textContent = 'Closing...';
+        try {
+          const res = await fetch(`/api/conversations/${encodeURIComponent(conv.id)}/close`, { method: 'POST' });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        } catch (err) {
+          close.textContent = 'Close';
+          window.alert(`Could not close: ${err.message}`);
+        }
+      });
+      meta.appendChild(close);
+    }
     btn.appendChild(meta);
 
     btn.addEventListener('click', () => {

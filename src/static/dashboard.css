@@ -94,6 +94,12 @@ body.resizing { cursor: col-resize; user-select: none; }
 .conv-btn.ended { background: #f6f8fb; color: var(--muted); }
 .conv-id { font-size: 12px; font-weight: 700; overflow-wrap: anywhere; }
 .conv-meta { font-size: 11px; color: var(--muted); margin-top: 4px; display: flex; gap: 8px; align-items: center; }
+.close-btn {
+  margin-left: auto; padding: 2px 9px; border-radius: 999px;
+  border: 1px solid #f4c2c2; color: #c62828; background: #ffebee;
+  font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+}
+.close-btn:hover { background: #ffd9de; }
 
 .badge {
   display: inline-flex; align-items: center;

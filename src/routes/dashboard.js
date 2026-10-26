@@ -7,6 +7,7 @@ import {
   getConversation,
   getCiEvents,
   getOrchestratorEvents,
+  markConversationEnded,
 } from '../repositories/conversations.js';
 import { ciSignals } from '../services/capture.js';
 
@@ -72,6 +73,32 @@ export async function registerDashboardRoutes(fastify) {
   fastify.get('/api/sessions/:id/signals', async (request) => {
     const { id } = request.params;
     return { id, ...ciSignals(getCiEvents(id)) };
+  });
+
+  // Close the Orchestrator conversation so the next message starts a fresh one
+  // (with the current Configuration, including Intelligence).
+  fastify.post('/api/conversations/:id/close', async (request, reply) => {
+    const { id } = request.params;
+    const { TWILIO_ACCOUNT_SID, TWILIO_API_KEY, TWILIO_API_SECRET } = process.env;
+    const auth = Buffer.from(`${TWILIO_API_KEY}:${TWILIO_API_SECRET}`).toString('base64');
+    const res = await fetch(
+      `https://conversations.twilio.com/v2/Conversations/${encodeURIComponent(id)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Basic ${auth}`,
+          'Content-Type': 'application/json',
+          'X-Twilio-AccountSid': TWILIO_ACCOUNT_SID,
+        },
+        body: JSON.stringify({ status: 'CLOSED' }),
+      },
+    );
+    if (!res.ok) {
+      reply.code(res.status);
+      return { error: 'close_failed', status: res.status, detail: await res.text() };
+    }
+    markConversationEnded(id);
+    return { id, status: 'closed' };
   });
 
   fastify.get('/healthz', async () => ({ status: 'ok' }));
